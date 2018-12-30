@@ -1,6 +1,6 @@
 name: "Omega Zirkel Global Intercom Plugin"
 main: de.omegazirkel.risingworld.GlobalIntercom
-version: 0.6.0
+version: 0.6.1
 author: "Maik 'Devidian' Laschober"
 team: "Omega Zirkel"
 description: "This Plugin enables chat between servers (Singleplayer too)"

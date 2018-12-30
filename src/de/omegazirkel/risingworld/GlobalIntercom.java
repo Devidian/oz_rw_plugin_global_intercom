@@ -15,6 +15,8 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
 import net.risingworld.api.events.EventMethod;
@@ -61,8 +63,13 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
     @Override
     public void onDisable() {
-        //TODO: unload everything!
-        ws = null;
+        try {
+            //TODO: unload everything!
+            ws.session.close();
+            ws = null;
+        } catch (IOException ex) {
+            Logger.getLogger(GlobalIntercom.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @EventMethod
