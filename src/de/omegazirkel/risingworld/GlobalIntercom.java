@@ -5,23 +5,16 @@
  */
 package de.omegazirkel.risingworld;
 
-import com.mongodb.ConnectionString;
-import com.mongodb.MongoTimeoutException;
-import com.mongodb.client.model.changestream.ChangeStreamDocument;
-import com.mongodb.reactivestreams.client.ChangeStreamPublisher;
-import com.mongodb.reactivestreams.client.MongoClient;
-import com.mongodb.reactivestreams.client.MongoClients;
-import com.mongodb.reactivestreams.client.MongoCollection;
-import com.mongodb.reactivestreams.client.MongoDatabase;
-import com.mongodb.reactivestreams.client.Success;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import de.omegazirkel.risingworld.WSClientEndpoint.MessageHandler;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.lang.reflect.Type;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
 import net.risingworld.api.events.EventMethod;
@@ -30,23 +23,18 @@ import net.risingworld.api.events.player.PlayerChatEvent;
 import net.risingworld.api.events.player.PlayerCommandEvent;
 import net.risingworld.api.events.player.PlayerSpawnEvent;
 import net.risingworld.api.objects.Player;
-import net.risingworld.api.utils.Vector3f;
-import org.bson.Document;
-import org.reactivestreams.Publisher;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
 /**
  *
  * @author Maik Laschober
  */
-public class GlobalIntercom extends Plugin implements Listener {
+public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
     // Settings
     static int logLevel = 0;
     static boolean restartOnUpdate = true;
     static boolean overrideDefault = true;
-    static ConnectionString mongoConnectionString;
+    static URI webSocketURI;
     static String defaultChannel = "global";
     static boolean sendMOTD = false;
     static String motd = "This Server uses [#F00000]Global Intercom[#FFFFFF] Plugin. Type [#997d4a]/gi info[#FFFFFF] for more info";
@@ -61,24 +49,20 @@ public class GlobalIntercom extends Plugin implements Listener {
     static String colorOkay = "[#00FF00]";
     static String colorText = "[#EEEEEE]";
 
-    static int chatVersion = 1;
-    static boolean mongoStatus = false;
-    static MongoClient mongoClient;
-    static MongoDatabase mongoDB;
-    static MongoCollection<Document> chatCollection;
-    static ChangeStreamPublisher<Document> giPublisher;
-    static Subscriber<ChangeStreamDocument<Document>> giSubscriber;
+    // WebSocket
+    static WSClientEndpoint ws;
 
     @Override
     public void onEnable() {
         registerEventListener(this);
         this.initSettings();
-        this.initMongoDB();
+        this.initWebSocketClient();
     }
 
     @Override
     public void onDisable() {
-
+        //TODO: unload everything!
+        ws = null;
     }
 
     @EventMethod
@@ -122,12 +106,15 @@ public class GlobalIntercom extends Plugin implements Listener {
                     if (player.hasAttribute("gilastch")) {
                         lastCH = (String) player.getAttribute("gilastch");
                     }
-                    String dbStatus = colorError + "not connected";
-                    if (mongoStatus) {
-                        dbStatus = colorOkay + "connected";
+
+                    String wsStatus = colorError + "not connected";
+                    if (ws.isConnected) {
+                        wsStatus = colorOkay + "connected";
                     }
 
-                    player.sendTextMessage(colorOkay + "GlobalIntercom:> STATUS\n[#FFFFFF]Current default channel: [#997d4a]" + lastCH + "\n[#FFFFFF]Database status: " + dbStatus);
+                    player.sendTextMessage(colorOkay + "GlobalIntercom:> STATUS\n"
+                            + colorText + "Current default channel: [#997d4a]" + lastCH + "\n"
+                            + colorText + "WebSocket: " + wsStatus);
                     break;
                 case "override":
                     if (cmd.length > 2) {
@@ -214,42 +201,25 @@ public class GlobalIntercom extends Plugin implements Listener {
             return; // no Global Intercom Chat message
         }
 
-        Document doc = new Document("createdOn", new Date())
-                .append("chatVersion", chatVersion)
-                .append("chatContent", chatMessage.trim())
-                .append("chatChannel", channel)
-                .append("playerName", player.getName())
-                .append("playerUID", uid)
-                .append("sourceName", server.getName())
-                .append("sourceIP", server.getIP())
-                .append("sourceVersion", server.getVersion());
+        event.setCancelled(true);
+        ChatMessage cmsg = new ChatMessage(player, server, chatMessage, channel);
+        WSMessage<ChatMessage> wsbcm = new WSMessage<>("broadcastMessage", cmsg);
+
+        GsonBuilder gsb = new GsonBuilder();
+        Gson gson = gsb.create();
+
         try {
-            chatCollection.insertOne(doc).subscribe(new Subscriber<Success>() {
-                @Override
-                public void onSubscribe(final Subscription s) {
-                    s.request(1);  // <--- Data requested and the insertion will now occur
-                }
-
-                @Override
-                public void onNext(final Success success) {
-                    System.out.println("Inserted");
-                }
-
-                @Override
-                public void onError(final Throwable t) {
-                    System.out.println("Failed");
-                }
-
-                @Override
-                public void onComplete() {
-                    System.out.println("Completed");
-                }
-            });
-            event.setCancelled(true);
-        } catch (Exception ex) {
-            log(ex.getMessage(), 999);
+            if (ws.isConnected) {
+                String msg = gson.toJson(wsbcm);
+//                log("sending..."+msg,0);
+                ws.sendMessage(msg);
+            } else {
+                player.sendTextMessage(colorError + "GlobalIntercom:>[#FFFFFF] WebSocket not connected, can't send message.");
+            }
+        } catch (Exception e) {
+            player.sendTextMessage(colorError + "GlobalIntercom:>[#FFFFFF] " + e.getMessage());
+            this.initWebSocketClient();
         }
-
     }
 
     /**
@@ -265,72 +235,16 @@ public class GlobalIntercom extends Plugin implements Listener {
     }
 
     /**
-     * https://github.com/mongodb/mongo-java-driver-reactivestreams/blob/master/examples/documentation/src/ChangeStreamSamples.java
-     */
-    private void initMongoDB() {
-        mongoClient = MongoClients.create(mongoConnectionString);
-        mongoDB = mongoClient.getDatabase("risingWorld");
-        chatCollection = mongoDB.getCollection("chatIntercom");
-        initIntercomWatcher();
-    }
-
-    /**
      *
      */
-    private void initIntercomWatcher() {
-
-        giPublisher = chatCollection.watch();
-        giSubscriber = new Subscriber<ChangeStreamDocument<Document>>() {
-            @Override
-            public void onSubscribe(final Subscription s) {
-                s.request(Integer.MAX_VALUE);
-                mongoStatus = true;
-            }
-
-            @Override
-            public void onNext(final ChangeStreamDocument<Document> csdoc) {
-                try {
-                    Document doc = csdoc.getFullDocument();
-                    int version = doc.getInteger("chatVersion", 0);
-                    if (chatVersion != version) {
-                        return;
-                    }
-                    String playerName = doc.getString("playerName");
-                    String channel = doc.getString("chatChannel");
-                    Long playerUID = doc.getLong("playerUID");
-//                    String serverName = doc.getString("sourceName");
-                    String chatMessage = doc.getString("chatContent");
-
-                    getServer().getAllPlayers().forEach((player) -> {
-                        String chKey = "gi." + channel;
-                        String color = colorOther;
-                        if (player.getUID() == playerUID) {
-                            color = colorSelf;
-                        }
-                        boolean isInChannel = player.hasAttribute(chKey) && (boolean) player.getAttribute(chKey);
-                        boolean isGlobalDefault = !player.hasAttribute(chKey) && channel.contentEquals(defaultChannel);
-                        if (isInChannel || isGlobalDefault) {
-                            player.sendTextMessage(color + "[" + channel.toUpperCase() + "] " + playerName + ": " + colorText + chatMessage);
-                        }
-                    });
-                } catch (Exception ex) {
-                    log(ex.getMessage(), 999);
-                }
-            }
-
-            @Override
-            public void onError(final Throwable t) {
-                log("Failed", 999);
-                mongoStatus = false;
-            }
-
-            @Override
-            public void onComplete() {
-                log("Completed", 0);
-                mongoStatus = false;
-            }
-        };
-        giPublisher.subscribe(giSubscriber);
+    private void initWebSocketClient() {
+        // test
+        try {
+            ws = new WSClientEndpoint(webSocketURI);
+            ws.setMessageHandler(this);
+        } catch (Exception e) {
+            log(e.getMessage(), 999);
+        }
     }
 
     /**
@@ -345,7 +259,7 @@ public class GlobalIntercom extends Plugin implements Listener {
             in.close();
             // fill global values
             logLevel = Integer.parseInt(settings.getProperty("logLevel"));
-            mongoConnectionString = new ConnectionString(settings.getProperty("mongoURL"));
+            webSocketURI = new URI(settings.getProperty("webSocketURI"));
             defaultChannel = settings.getProperty("defaultChannel");
             overrideDefault = settings.getProperty("overrideDefault").contentEquals("true");
             colorOther = settings.getProperty("colorOther");
@@ -358,15 +272,15 @@ public class GlobalIntercom extends Plugin implements Listener {
 
             // restart settings
             restartOnUpdate = settings.getProperty("restartOnUpdate").contentEquals("true");
-            this.log("OmegaZirkel GlobalIntercom Plugin is enabled", 10);
+            log("OmegaZirkel GlobalIntercom Plugin is enabled", 10);
 
         } catch (IOException ex) {
-            this.log("IOException on initSettings: " + ex.getMessage(), 100);
+            log("IOException on initSettings: " + ex.getMessage(), 100);
 //            e.printStackTrace();
         } catch (NumberFormatException ex) {
-            this.log("NumberFormatException on initSettings: " + ex.getMessage(), 100);
-        } catch (Exception ex) {
-            this.log("Exception on initSettings: " + ex.getMessage(), 100);
+            log("NumberFormatException on initSettings: " + ex.getMessage(), 100);
+        } catch (URISyntaxException ex) {
+            log("Exception on initSettings: " + ex.getMessage(), 100);
         }
     }
 
@@ -375,9 +289,45 @@ public class GlobalIntercom extends Plugin implements Listener {
      * @param text
      * @param level
      */
-    private void log(String text, int level) {
+    public static void log(String text, int level) {
         if (level >= logLevel) {
             System.out.println("[OZGI] " + text);
+        }
+    }
+
+    /**
+     *
+     * @param cmsg
+     */
+    private void broadcastMessage(ChatMessage cmsg) {
+        getServer().getAllPlayers().forEach((player) -> {
+            String chKey = "gi." + cmsg.chatChannel;
+            String color = colorOther;
+//            log(player.getUID() +"=="+ cmsg.playerUID,0);
+            if ((player.getUID()+"").contentEquals(cmsg.playerUID+"")) {
+                color = colorSelf;
+            }
+            boolean isInChannel = player.hasAttribute(chKey) && (boolean) player.getAttribute(chKey);
+            boolean isGlobalDefault = !player.hasAttribute(chKey) && cmsg.chatChannel.contentEquals(defaultChannel);
+            if (isInChannel || isGlobalDefault) {
+                player.sendTextMessage(color + "[" + cmsg.chatChannel.toUpperCase() + "] " + cmsg.playerName + ": " + colorText + cmsg.chatContent);
+            }
+        });
+    }
+
+    @Override
+    public void handleMessage(String message) {
+//        log(message, 0);
+        WSMessage wsm = new Gson().fromJson(message, WSMessage.class);
+        if (wsm.event.contentEquals("broadcastMessage")) {
+            Type type = new TypeToken<WSMessage<ChatMessage>>() {
+            }.getType();
+//            System.out.println(type);
+            WSMessage<ChatMessage> wscmsg = new Gson().fromJson(message, type);
+//            System.out.println(wscmsg.toString());
+            ChatMessage cmsg = wscmsg.payload;
+            log("New BC Message <" + cmsg.chatContent + "> from " + cmsg.playerName, 0);
+            this.broadcastMessage(cmsg);
         }
     }
 }

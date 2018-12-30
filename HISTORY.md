@@ -1,3 +1,6 @@
+### Version 0.6.0:
+- Geändert: MongoDB Bibliotheken entfernt, Plugin nutzt jetzt WebSocket für den Versand und Empfang von Nachrichten
+
 ### Version 0.5.0:
 - Behoben: die ersten 2 Zeichen im lokalen chat wurden versehentlich abgeschnitten
 - Geändert: chat-override ist jetzt in der standard Konfiguration aus, zum ändern in der `settings.properties` wieder auf `true` setzen
