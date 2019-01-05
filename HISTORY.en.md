@@ -1,3 +1,8 @@
+### Version 0.6.1:
+- changed: `/gi info` slightly changed output
+- added: `/gi status` shows now plugin version
+- misc: project is now a maven project
+
 ### Version 0.6.0:
 - changed: replaced MongoDB libs with WebSocket, no direct database access from now on.
 

@@ -1,3 +1,8 @@
+### Version 0.6.1:
+- Geändert: `/gi info` Ausgabe etwas angepasst
+- Hinzugefügt: `/gi status` zeigt nun die installierte Plugin version an
+- Sonstiges: Projekt ist jetzt ein Maven Projekt
+
 ### Version 0.6.0:
 - Geändert: MongoDB Bibliotheken entfernt, Plugin nutzt jetzt WebSocket für den Versand und Empfang von Nachrichten
 

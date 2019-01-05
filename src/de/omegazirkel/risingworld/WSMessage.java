@@ -11,16 +11,16 @@ package de.omegazirkel.risingworld;
  */
 public class WSMessage<T> {
 
-    public final String event;
-    public final T payload;
+	public final String event;
+	public final T payload;
 
-    WSMessage(String event,T payload) {
-        this.payload = payload;
-        this.event = event;
-    }
-    
-    @Override
-    public String toString(){
-        return "WSMessage Object\nEvent: "+ this.event + "\nPayload: " + this.payload;
-    }
+	WSMessage(String event, T payload) {
+		this.payload = payload;
+		this.event = event;
+	}
+
+	@Override
+	public String toString() {
+		return "WSMessage Object\nEvent: " + this.event + "\nPayload: " + this.payload;
+	}
 }

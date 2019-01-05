@@ -10,14 +10,12 @@ import java.net.URI;
 import javax.websocket.ClientEndpoint;
 import javax.websocket.CloseReason;
 import javax.websocket.CloseReason.CloseCodes;
-import javax.websocket.ContainerProvider;
 import javax.websocket.DeploymentException;
 import javax.websocket.OnClose;
 import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.OnError;
 import javax.websocket.Session;
-import javax.websocket.WebSocketContainer;
 import org.glassfish.tyrus.client.ClientManager;
 import org.glassfish.tyrus.client.ClientProperties;
 
@@ -28,139 +26,148 @@ import org.glassfish.tyrus.client.ClientProperties;
 @ClientEndpoint
 public class WSClientEndpoint {
 
-    Session session = null;
-    private MessageHandler messageHandler;
-    private URI endpointURI = null;
-//    private int disconnectCount = 0;
-    public boolean isConnected = false;
-    private ClientManager client;
+	private static WSClientEndpoint HIGHLANDER = null;
 
-    /**
-     *
-     * @param endpointURI
-     */
-    public WSClientEndpoint(URI endpointURI) {
-        this.endpointURI = endpointURI;
-        this.client = ClientManager.createClient();
-        ClientManager.ReconnectHandler reconnectHandler = new ClientManager.ReconnectHandler() {
-            private int counter = 0;
+	public static WSClientEndpoint getInstance(URI endpointURI) {
+		if (HIGHLANDER == null) {
+			HIGHLANDER = new WSClientEndpoint(endpointURI);
+		}
+		return HIGHLANDER;
+	}
 
-            @Override
-            public boolean onDisconnect(CloseReason closeReason) {
-                final int i = ++counter;
-                GlobalIntercom.log("WebSocket got disconnected: " + closeReason.toString(), 999);
-                if (closeReason.getCloseCode() == CloseCodes.CLOSED_ABNORMALLY) {
-                    GlobalIntercom.log("WebSocket reconnecting... " + i, 0);
-                    return true;
-                } else {
-                    GlobalIntercom.log("WebSocket not reconnecting.", 0);
-                    return false;
-                }
-            }
+	Session session = null;
+	private MessageHandler messageHandler;
+	private URI endpointURI = null;
+	// private int disconnectCount = 0;
+	public boolean isConnected = false;
+	private ClientManager client;
 
-            @Override
-            public boolean onConnectFailure(Exception exception) {
-                final int i = ++counter;
-                GlobalIntercom.log("WebSocket failed to connect: " + exception.getMessage(), 999);
-//                if (i <= 30) {
-                    GlobalIntercom.log("WebSocket reconnecting... " + i, 0);
-                    return true;
-//                } else {
-//                    GlobalIntercom.log("WebSocket not reconnecting.", 0);
-//                    return false;
-//                }
-            }
-        };
-        this.client.getProperties().put(ClientProperties.RECONNECT_HANDLER, reconnectHandler);
-        this.connect();
-    }
+	/**
+	 *
+	 * @param endpointURI
+	 */
+	private WSClientEndpoint(URI endpointURI) {
+		this.endpointURI = endpointURI;
+		this.client = ClientManager.createClient();
+		ClientManager.ReconnectHandler reconnectHandler = new ClientManager.ReconnectHandler() {
+			private int counter = 0;
 
-    /**
-     *
-     */
-    private void connect() {
-        try {
-            GlobalIntercom.log("WebSocket connecting to " + this.endpointURI, 0);
-            this.session = this.client.connectToServer(this, this.endpointURI);
-        } catch (IOException | DeploymentException e) {
-            GlobalIntercom.log(e.getMessage(), 999);
-        }
-    }
+			@Override
+			public boolean onDisconnect(CloseReason closeReason) {
+				final int i = ++counter;
+				GlobalIntercom.log("WebSocket got disconnected: " + closeReason.toString(), 999);
+				if (closeReason.getCloseCode() == CloseCodes.CLOSED_ABNORMALLY) {
+					GlobalIntercom.log("WebSocket reconnecting... " + i, 0);
+					return true;
+				} else {
+					GlobalIntercom.log("WebSocket not reconnecting.", 0);
+					return false;
+				}
+			}
 
-    /**
-     *
-     * @param session
-     * @param t
-     */
-    @OnError
-    public void onError(Session session, Throwable t) {
-        GlobalIntercom.log(t.toString(), 999);
+			@Override
+			public boolean onConnectFailure(Exception exception) {
+				final int i = ++counter;
+				GlobalIntercom.log("WebSocket failed to connect: " + exception.getMessage(), 999);
+				// if (i <= 30) {
+				GlobalIntercom.log("WebSocket reconnecting... " + i, 0);
+				return true;
+				// } else {
+				// GlobalIntercom.log("WebSocket not reconnecting.", 0);
+				// return false;
+				// }
+			}
+		};
+		this.client.getProperties().put(ClientProperties.RECONNECT_HANDLER, reconnectHandler);
+		this.connect();
+	}
 
-    }
+	/**
+	 *
+	 */
+	private void connect() {
+		try {
+			GlobalIntercom.log("WebSocket connecting to " + this.endpointURI, 0);
+			this.session = this.client.connectToServer(this, this.endpointURI);
+		} catch (IOException | DeploymentException e) {
+			GlobalIntercom.log(e.getMessage(), 999);
+		}
+	}
 
-    /**
-     *
-     * @param session
-     */
-    @OnOpen
-    public void onOpen(Session session) {
-        this.session = session;
-        this.isConnected = true;
-        GlobalIntercom.log("WebSocket connected!", 0);
-    }
+	/**
+	 *
+	 * @param session
+	 * @param t
+	 */
+	@OnError
+	public void onError(Session session, Throwable t) {
+		GlobalIntercom.log(t.toString(), 999);
 
-    /**
-     *
-     * @param session
-     * @param reason
-     */
-    @OnClose
-    public void onClose(Session session, CloseReason reason) {
-        this.session = null;
-        this.isConnected = false;
-//        disconnectCount++;
-        GlobalIntercom.log("WebSocket closed: " + reason.toString(), 999);
-        // todo: do not retry after x disconnects
-//        try {
-//            this.connect(); // reconnect
-//        } catch (Exception e) {
-//            System.out.println(e.getMessage());
-//        }
-    }
+	}
 
-    /**
-     *
-     * @param message
-     * @param session
-     */
-    @OnMessage
-    public void onMessage(String message, Session session) {
-        if (this.messageHandler != null) {
-            this.messageHandler.handleMessage(message);
-        }
-    }
+	/**
+	 *
+	 * @param session
+	 */
+	@OnOpen
+	public void onOpen(Session session) {
+		this.session = session;
+		this.isConnected = true;
+		GlobalIntercom.log("WebSocket connected!", 0);
+	}
 
-    /**
-     *
-     * @param msgHandler
-     */
-    public void setMessageHandler(MessageHandler msgHandler) {
-        this.messageHandler = msgHandler;
-    }
+	/**
+	 *
+	 * @param session
+	 * @param reason
+	 */
+	@OnClose
+	public void onClose(Session session, CloseReason reason) {
+		this.session = null;
+		this.isConnected = false;
+		// disconnectCount++;
+		GlobalIntercom.log("WebSocket closed: " + reason.toString(), 999);
+		// todo: do not retry after x disconnects
+		// try {
+		// this.connect(); // reconnect
+		// } catch (Exception e) {
+		// System.out.println(e.getMessage());
+		// }
+	}
 
-    /**
-     *
-     * @param message
-     */
-    public void sendMessage(String message) {
-        this.session.getAsyncRemote().sendText(message);
-    }
+	/**
+	 *
+	 * @param message
+	 * @param session
+	 */
+	@OnMessage
+	public void onMessage(String message, Session session) {
+		if (this.messageHandler != null) {
+			this.messageHandler.handleMessage(message);
+		}
+	}
 
-    /**
-     *
-     */
-    public static interface MessageHandler {
+	/**
+	 *
+	 * @param msgHandler
+	 */
+	public void setMessageHandler(MessageHandler msgHandler) {
+		this.messageHandler = msgHandler;
+	}
 
-        public void handleMessage(String message);
-    }
+	/**
+	 *
+	 * @param message
+	 */
+	public void sendMessage(String message) {
+		this.session.getAsyncRemote().sendText(message);
+	}
+
+	/**
+	 *
+	 */
+	public static interface MessageHandler {
+
+		public void handleMessage(String message);
+	}
 }
