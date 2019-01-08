@@ -1,3 +1,8 @@
+### Version 0.7.0:
+- new: new settings `joinDefault=false`. If you set this to `true`, players will join default channel on connect (~ like before < 0.7.0). This allows servers to deactivate default channels for players that don't like to chat and might get annoyed when they have to leave the channel everytime.
+- fixed: if you try posting into a GI channel that you have not joined yet, you will get a notice but your text does not proceed to local chat anymore.
+- fixed: if you just want to change your chatOverride channel back to local you can now do this with just typing `#%`. There will be no empty message now. 
+
 ### Version 0.6.1:
 - changed: `/gi info` slightly changed output
 - added: `/gi status` shows now plugin version

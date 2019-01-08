@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.omegazirkel.risingworld</groupId>
 	<artifactId>GlobalIntercom</artifactId>
-	<version>0.6.1-SNAPSHOT</version>
+	<version>0.7.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
@@ -36,7 +36,7 @@
 	<build>
 		<sourceDirectory>src</sourceDirectory>
 		<directory>target</directory>
-		<finalName>OZ-${artifactId}-Plugin</finalName>
+		<finalName>OZ-${project.artifactId}-Plugin</finalName>
 		<resources>
 			<resource>
 				<targetPath>resources</targetPath>
@@ -66,7 +66,7 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${basedir}/dist/${artifactId}/lib</outputDirectory>
+							<outputDirectory>${basedir}/dist/${project.artifactId}/lib</outputDirectory>
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>false</overWriteSnapshots>
 							<overWriteIfNewer>true</overWriteIfNewer>
@@ -86,7 +86,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${basedir}/dist/${artifactId}</outputDirectory>
+							<outputDirectory>${basedir}/dist/${project.artifactId}</outputDirectory>
 							<resources>
 								<resource>
 									<directory>/src</directory>

@@ -23,6 +23,7 @@ import net.risingworld.api.events.EventMethod;
 import net.risingworld.api.events.Listener;
 import net.risingworld.api.events.player.PlayerChatEvent;
 import net.risingworld.api.events.player.PlayerCommandEvent;
+import net.risingworld.api.events.player.PlayerConnectEvent;
 import net.risingworld.api.events.player.PlayerSpawnEvent;
 import net.risingworld.api.objects.Player;
 
@@ -32,7 +33,7 @@ import net.risingworld.api.objects.Player;
  */
 public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
-	static final String pluginVersion = "0.6.1";
+	static final String pluginVersion = "0.7.0";
 	static final String pluginName = "GlobalIntercom";
 
 	static final String colorError = "[#FF0000]";
@@ -45,6 +46,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 	static int logLevel = 0;
 	static boolean restartOnUpdate = true;
 	static boolean overrideDefault = true;
+	static boolean joinDefault = false;
 	static URI webSocketURI;
 	static String defaultChannel = "global";
 	static boolean sendMOTD = false;
@@ -74,6 +76,15 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 			ws = null;
 		} catch (IOException ex) {
 			Logger.getLogger(GlobalIntercom.class.getName()).log(Level.SEVERE, null, ex);
+		}
+	}
+
+	@EventMethod
+	public void onPlayerConnect(PlayerConnectEvent event) {
+		if (joinDefault) {
+			event.getPlayer().setAttribute("gi." + defaultChannel, true);
+			event.getPlayer()
+					.sendTextMessage(colorOkay + pluginName + ":>" + colorText + " You have joined " + defaultChannel);
 		}
 	}
 
@@ -177,46 +188,51 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 		}
 
 		String noColorText = message.replaceFirst("(\\[#[a-fA-F]+\\])", "");
-		long uid = player.getUID();
+		// long uid = player.getUID();
 
 		if (noColorText.startsWith("#%")) {
 			// reset to local chat
 			player.deleteAttribute("gilastch");
-			event.setChatMessage(colorLocal + noColorText.substring(2));
+			if (noColorText.substring(2).length() > 0) {
+				event.setChatMessage(colorLocal + noColorText.substring(2));
+			} else {
+				player.sendTextMessage(colorOkay + pluginName + ":>" + colorText
+						+ "Your default chat is now set to local server chat");
+				event.setCancelled(true); // No text, don't proceed
+			}
 			return;
-		} else if (noColorText.startsWith("##")) {
-			// this is a message into a special channel
-			String[] msgParts = noColorText.substring(2).split(" ", 2);
-			channel = msgParts[0].toLowerCase();
+		} else if (noColorText.startsWith("#")) {
+			if (noColorText.startsWith("##")) {
+				// this is a message into a special channel
+				String[] msgParts = noColorText.substring(2).split(" ", 2);
+				channel = msgParts[0].toLowerCase();
+				chatMessage = msgParts[1];
+			} else {
+				channel = defaultChannel;
+				chatMessage = noColorText.substring(1);
+			}
 			if (channel.length() > 10) {
 				player.sendTextMessage(colorError + pluginName + ":>" + colorText + " channel length can't exceed 10 ("
 						+ channel + ")");
+				event.setCancelled(true); // do not post to local chat
 				return;
 			} else if (channel.length() < 3) {
 				player.sendTextMessage(colorError + pluginName + ":>" + colorText
 						+ " channel length must at least be 3 (" + channel + ")");
+				event.setCancelled(true); // do not post to local chat
 				return;
 			} else if (!player.hasAttribute("gi." + channel) || !(boolean) player.getAttribute("gi." + channel)) {
 				player.sendTextMessage(colorError + pluginName + ":>" + colorText + " you are not in this channel ("
 						+ channel + ")\nTo join type /gi join " + channel);
+				event.setCancelled(true); // do not post to local chat
 				return;
 			}
-			if (override) {
-				player.setAttribute("gilastch", channel);
-			}
-			chatMessage = msgParts[1];
-		} else if (noColorText.startsWith("#")) {
-			channel = defaultChannel;
-			if (player.hasAttribute("gi." + channel) && !(boolean) player.getAttribute("gi." + channel)) {
-				player.sendTextMessage(colorError + pluginName + ":>" + colorText + " you are not in this channel ("
-						+ channel + ")\nTo join type /gi join " + channel);
-				return;
-			}
+
+			// Override default text channel
 			if (override) {
 				player.setAttribute("gilastch", channel);
 			}
 
-			chatMessage = noColorText.substring(1);
 		} else if (player.hasAttribute("gilastch") && override) {
 			channel = (String) player.getAttribute("gilastch");
 			chatMessage = noColorText;
@@ -287,6 +303,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 			webSocketURI = new URI(settings.getProperty("webSocketURI"));
 			defaultChannel = settings.getProperty("defaultChannel");
 			overrideDefault = settings.getProperty("overrideDefault").contentEquals("true");
+			joinDefault = settings.getProperty("joinDefault").contentEquals("true");
 			colorOther = settings.getProperty("colorOther");
 			colorSelf = settings.getProperty("colorSelf");
 			colorLocal = settings.getProperty("colorLocal");
