@@ -33,7 +33,7 @@ import net.risingworld.api.objects.Player;
  */
 public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
-	static final String pluginVersion = "0.7.0";
+	static final String pluginVersion = "0.7.1";
 	static final String pluginName = "GlobalIntercom";
 
 	static final String colorError = "[#FF0000]";
@@ -72,8 +72,10 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 	public void onDisable() {
 		try {
 			// TODO: unload everything!
-			ws.session.close();
-			ws = null;
+			if (ws != null) {
+				ws.session.close();
+				ws = null;
+			}
 		} catch (IOException ex) {
 			Logger.getLogger(GlobalIntercom.class.getName()).log(Level.SEVERE, null, ex);
 		}

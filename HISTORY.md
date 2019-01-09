@@ -1,3 +1,6 @@
+### Version 0.7.1:
+- Behoben: null pointer exception onDisable()
+
 ### Version 0.7.0:
 - Neu: Neue Einstellung `joinDefault=false` wenn dieser Wert auf `true` gesetzt wird, tritt jeder Spieler beim connecten dem standard Kanal bei, damit ist es Möglich auf servern das standard-beitreten zu deaktivieren um Spieler die dieses Plugin nicht nutzen möchten nicht zu nerven ;)
 - Behoben: wenn man versucht in einen Kanal zu posten in dem man nicht selbst beigetreten ist, wird der text nicht mehr automatisch in den lokalen chat geschrieben. 
