@@ -1,3 +1,6 @@
+### Version 0.7.2:
+- Hinzugefügt: öffentliche methode zum Prüfen ob ein ChatEvent eine GI Nachricht ist
+
 ### Version 0.7.1:
 - Behoben: null pointer exception onDisable()
 

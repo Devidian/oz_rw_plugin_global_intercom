@@ -33,7 +33,7 @@ import net.risingworld.api.objects.Player;
  */
 public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
-	static final String pluginVersion = "0.7.1";
+	static final String pluginVersion = "0.7.2";
 	static final String pluginName = "GlobalIntercom";
 
 	static final String colorError = "[#FF0000]";
@@ -173,6 +173,25 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 				break;
 			}
 		}
+	}
+
+	/**
+	 * 
+	 * @param event
+	 * @return
+	 */
+	public boolean isGIMessage(PlayerChatEvent event) {
+		Player player = event.getPlayer();
+		String message = event.getChatMessage();
+		String noColorText = message.replaceFirst("(\\[#[a-fA-F]+\\])", "");
+		boolean override = overrideDefault;
+
+		if (player.hasAttribute("giOverride")) {
+			override = (boolean) player.getAttribute("giOverride");
+		}
+
+		// its a GI message if it starts with # or gilastch is set with override true AND chat doesnt start with #%
+		return (noColorText.startsWith("#") || (player.hasAttribute("gilastch") && override))  && !noColorText.startsWith("#%");
 	}
 
 	@EventMethod
