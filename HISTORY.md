@@ -1,3 +1,26 @@
+## [Unreleased]
+
+
+## [0.8.0] - 2019-01-24
+### Added
+- Mehrere PlayerMessage Klassen hinzugefügt um erweiterte Kommunikation mit dem RelayServer zu ermöglichen
+- i18n dateien zur Übersetzung (de/en)
+- so ziemlich alle Texte wurden übersetzt
+- man kann nun eigene Kanäle erstellen (auch mit Passwort), wenn man seine Einstellungen auf dem Server speichern lässt.
+- verwende jetzt das Paket `de.omegazirkel.risingworld.tools` zum logging 
+
+### Changed
+- Alle player.attributes bis auf den aktuellen chat Kanal wurden in die Klasse GiPlayer verschoben
+- man kann nun nur noch Kanälen beitreten, die vorher erstellt wurden
+- `/gi status` und `/gi help` wurden angepasst
+- `/gi status` zeigt nun auch die Kanäle denen man beigetreten ist
+- neues Kommando: `/gi create channelname [password]`
+- neues Kommando: `/gi save true|false`
+- neues Kommando: `/gi close channelname`
+
+### Removed
+- Server Einstellung `overrideDefault` wurde entfernt. Spieler müssen dies nun selbst setzen, standard: aus
+
 ## [0.7.2] - 2019-01-15
 ### Added
 - öffentliche methode zum Prüfen ob ein ChatEvent eine GI Nachricht ist

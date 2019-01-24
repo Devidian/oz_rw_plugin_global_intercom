@@ -1,13 +1,22 @@
 ## [Unreleased]
+
+
+## [0.8.0] - 2019-01-24
 ### Added
 - Multiple PlayerMessage classes to handle extended communication with RelayServer
 - i18n files for translation (de/en)
+- translated almost every texts
 - you can create your own channels with passwords if you like (must save your settings on the server therefore)
 - now using `de.omegazirkel.risingworld.tools` package for logging 
+- new Command `/gi save true|false`
+- new Command `/gi create channelname [password]`
+- new Command `/gi close channelname`
 
 ### Changed
 - replaced all player.attributes except current default channel with GiPlayer object that holds these settings
 - you can now only join channels that were created before
+- `/gi status` and `/gi help` were adjusted
+- `/gi status` shows now a list of channels you are currently in
 
 ### Removed
 - server settings `overrideDefault` was removed, only player settings count and will be false by default
