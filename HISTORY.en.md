@@ -3,6 +3,7 @@
 - Multiple PlayerMessage classes to handle extended communication with RelayServer
 - i18n files for translation (de/en)
 - you can create your own channels with passwords if you like (must save your settings on the server therefore)
+- now using `de.omegazirkel.risingworld.tools` package for logging 
 
 ### Changed
 - replaced all player.attributes except current default channel with GiPlayer object that holds these settings
@@ -27,10 +28,13 @@
 - if you try posting into a GI channel that you have not joined yet, you will get a notice but your text does not proceed to local chat anymore.
 - if you just want to change your chatOverride channel back to local you can now do this with just typing `#%`. There will be no empty message now. 
 
-## [0.6.1]
-- changed: `/gi info` slightly changed output
-- added: `/gi status` shows now plugin version
-- misc: project is now a maven project
+## [0.6.1] - 2019-01-05
+### Changed
+- `/gi info` slightly changed output
+- project is now a maven project
+
+### Added
+- `/gi status` shows now plugin version
 
 ## [0.6.0]
 - changed: replaced MongoDB libs with WebSocket, no direct database access from now on.

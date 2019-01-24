@@ -13,13 +13,24 @@ public class GlobalIntercomPlayer {
     public boolean online; // Only needed on Relay Server, has currently no effect ingame
     public boolean override;
 
-
     /**
      *
      * @param chName
      * @return
      */
-    public boolean isInChannel(String chName){
+    public boolean isInChannel(String chName) {
         return this.channels.contains(chName);
+    }
+
+    /**
+     * 
+     * @return
+     */
+    public String getChannelList() {
+        StringBuilder sb = new StringBuilder();
+        this.channels.forEach(ch -> {
+            sb.append(ch + " ");
+        });
+        return sb.toString();
     }
 }

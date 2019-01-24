@@ -145,16 +145,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
 		if (cmd[0].equals("/gi")) {
 			String option = cmd[1];
-			String channel = defaultChannel;
-			if (cmd.length > 2) {
-				channel = cmd[2].toLowerCase();
-			}
-			if (option.isEmpty() || channel.isEmpty() || channel.length() < 3 || channel.length() > 10) {
-				player.sendTextMessage(colorError + pluginName + ":>" + colorText + " Invalid call " + command
-						+ "\nUsage: " + colorCommand + "/gi [join|leave|create] [channelname]\n" + colorText
-						+ "channelname must be at least 3 but max 10 letters");
-				return;
-			}
+			// String channel = defaultChannel;
 			switch (option) {
 			case "save":
 				if (cmd.length > 2) {
@@ -169,23 +160,43 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 					}
 				} else {
 					player.sendTextMessage(colorError + pluginName + ":>" + colorText
-							+ t.get("MSG_CMD_ERR_ARGUMENTS", lang)
-									.replace("PH_COMMAND", colorError + command + colorText)
-									.replace("PH_COMMAND_HELP", colorCommand + "/gi save [true|false]\n" + colorText));
+							+ t.get("MSG_CMD_ERR_ARGUMENTS", lang).replace("PH_CMD", colorError + command + colorText)
+									.replace("PH_COMMAND_HELP", colorCommand + "/gi save true|false\n" + colorText));
 				}
 			case "create": {
-				PlayerCreateChannelMessage msg = new PlayerCreateChannelMessage(player);
-				if (cmd.length > 3) {
-					msg.password = cmd[3];
+				if (cmd.length > 2) {
+					PlayerCreateChannelMessage msg = new PlayerCreateChannelMessage(player);
+					msg.channel = cmd[2].toLowerCase();
+					if (cmd.length > 3) {
+						msg.password = cmd[3];
+					}
+					WSMessage<PlayerCreateChannelMessage> wsmsg = new WSMessage<>("playerCreateChannel", msg);
+					this.transmitMessageWS(player, wsmsg);
+				} else {
+					player.sendTextMessage(colorError + pluginName + ":>" + colorText
+							+ t.get("MSG_CMD_ERR_ARGUMENTS", lang).replace("PH_CMD", colorError + command + colorText)
+									.replace("PH_COMMAND_HELP",
+											colorCommand + "/gi create channelname [password]\n" + colorText));
 				}
-				WSMessage<PlayerCreateChannelMessage> wsmsg = new WSMessage<>("playerCreateChannel", msg);
-				this.transmitMessageWS(player, wsmsg);
+			}
+				break;
+			case "close": {
+				if (cmd.length > 2) {
+					PlayerCloseChannelMessage msg = new PlayerCloseChannelMessage(player);
+					msg.channel = cmd[2].toLowerCase();
+					WSMessage<PlayerCloseChannelMessage> wsmsg = new WSMessage<>("playerCloseChannel", msg);
+					this.transmitMessageWS(player, wsmsg);
+				} else {
+					player.sendTextMessage(colorError + pluginName + ":>" + colorText
+							+ t.get("MSG_CMD_ERR_ARGUMENTS", lang).replace("PH_CMD", colorError + command + colorText)
+									.replace("PH_COMMAND_HELP", colorCommand + "/gi close channelname\n" + colorText));
+				}
 			}
 				break;
 			case "join": {
 
 				PlayerJoinChannelMessage msg = new PlayerJoinChannelMessage(player);
-				msg.channel = channel;
+				msg.channel = cmd[2].toLowerCase();
 				if (cmd.length > 3) {
 					msg.password = cmd[3];
 				}
@@ -196,7 +207,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 			case "leave": {
 
 				PlayerLeaveChannelMessage msg = new PlayerLeaveChannelMessage(player);
-				msg.channel = channel;
+				msg.channel = cmd[2].toLowerCase();
 				WSMessage<PlayerLeaveChannelMessage> wsmsg = new WSMessage<>("playerLeaveChannel", msg);
 				this.transmitMessageWS(player, wsmsg);
 
@@ -204,14 +215,19 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 				break;
 			case "help":
 			case "info":
-				player.sendTextMessage(colorOkay + pluginName + ":> USAGE\n" + colorText + "Join or leave channel "
-						+ colorCommand + "/gi [join|leave] [channelname] \n" + colorText
-						+ "Write <HelloWorld> to default channel: " + colorCommand + "#HelloWorld\n" + colorText
-						+ "Write <HelloWorld> to other channel: " + colorCommand + "##other HelloWorld\n" + colorText
-						+ "Reset default channel to local: " + colorCommand + "#%text\n" + colorText
-						+ "Change chat-override: " + colorCommand + "/gi override [true|false]\n" + colorText
-						+ "Show (this) help: " + colorCommand + "/gi [help|info]\n" + colorText + "Show Plugin status: "
-						+ colorCommand + "/gi status");
+				String infoMessage = t.get("MSG_CMD_INFO", lang)
+						.replace("PH_CMD_JOIN", colorCommand + "/gi join channelname [password]" + colorText)
+						.replace("PH_CMD_LEAVE", colorCommand + "/gi leave channelname" + colorText)
+						.replace("PH_CMD_CHAT_DEFAULT", colorCommand + "#HelloWorld" + colorText)
+						.replace("PH_CMD_CHAT_OTHER", colorCommand + "##other HelloWorld" + colorText)
+						.replace("PH_CMD_CHAT_LOCAL", colorCommand + "#%local HelloWorld" + colorText)
+						.replace("PH_CMD_OVERRIDE", colorCommand + "/gi override true|false" + colorText)
+						.replace("PH_CMD_HELP", colorCommand + "/gi help|info" + colorText)
+						.replace("PH_CMD_STATUS", colorCommand + "/gi status" + colorText)
+						.replace("PH_CMD_CREATE", colorCommand + "/gi create channelname [password]" + colorText)
+						.replace("PH_CMD_CLOSE", colorCommand + "/gi close channelname" + colorText)
+						.replace("PH_CMD_SAVE", colorCommand + "/gi save true|false" + colorText);
+				player.sendTextMessage(colorOkay + pluginName + ":> " + infoMessage);
 				break;
 			case "status":
 				String lastCH = "lokal";
@@ -224,9 +240,9 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 					wsStatus = colorOkay + t.get("STATE_CONNECTED", lang);
 				}
 
-				String saveStatus = colorError + t.get("STATUS_SAVE_INACTIVE", lang);
+				String saveStatus = colorError + t.get("STATE_INACTIVE", lang);
 				if (giPlayer.saveSettings) {
-					saveStatus = colorOkay + t.get("STATUS_SAVE_ACTIVE", lang);
+					saveStatus = colorOkay + t.get("STATE_ACTIVE", lang);
 				}
 
 				String overrideStatus = "";
@@ -236,12 +252,17 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 					overrideStatus = colorError + t.get("STATE_OFF", lang);
 				}
 
-				player.sendTextMessage(colorOkay + pluginName + ":> STATUS\n" + colorText + "Plugin version: "
-						+ colorOkay + pluginVersion + "\n" + colorText + "WebSocket: " + wsStatus + "\n" + colorText
-						+ t.get("STATUS_DEFAULT_CH", lang) + ": " + colorCommand + lastCH + "\n" + colorText
-						+ t.get("STATUS_SAVE", lang) + ": " + saveStatus + "\n" + colorText
-						+ t.get("MSG_INFO_OVERRIDE_STATE", lang).replace("PH_STATE", overrideStatus) + "\n"
-						+ colorText);
+				
+
+				String statusMessage = t.get("MSG_CMD_STATUS", lang).replace("PH_VERSION",
+						colorOkay + pluginVersion + colorText)
+						.replace("PH_STATE_WS", wsStatus + colorText)
+						.replace("PH_STATE_CH", colorCommand + lastCH + colorText)
+						.replace("PH_STATE_SAVE", saveStatus + colorText)
+						.replace("PH_STATE_OR", overrideStatus + colorText)
+						.replace("PH_CHLIST", colorCommand + giPlayer.getChannelList() + colorText);
+
+				player.sendTextMessage(colorOkay + pluginName + ":> " + statusMessage);
 				break;
 			case "override":
 				if (cmd.length > 2) {
@@ -276,11 +297,12 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 		String noColorText = message.replaceFirst("(\\[#[a-fA-F]+\\])", "");
 		GlobalIntercomPlayer giPlayer = playerMap.get(player.getUID() + "");
 		boolean override = giPlayer.override;
+		boolean isValidLastChannel = override && player.hasAttribute("gilastch")
+				&& giPlayer.isInChannel((String) player.getAttribute("gilastch"));
 
 		// its a GI message if it starts with # or gilastch is set with override true
 		// AND chat doesnt start with #%
-		return (noColorText.startsWith("#") || (player.hasAttribute("gilastch") && override))
-				&& !noColorText.startsWith("#%");
+		return (noColorText.startsWith("#") || (isValidLastChannel && !noColorText.startsWith("#%")));
 	}
 
 	@EventMethod
@@ -354,6 +376,13 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 			channel = (String) player.getAttribute("gilastch");
 			chatMessage = noColorText;
 		} else {
+			event.setChatMessage(colorLocal + noColorText);
+			return; // no Global Intercom Chat message
+		}
+
+		if (!giPlayer.isInChannel(channel)) {
+			// The player is not in that channel, return to local
+			player.deleteAttribute("gilastch");
 			event.setChatMessage(colorLocal + noColorText);
 			return; // no Global Intercom Chat message
 		}
@@ -531,24 +560,43 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 				String baseMessage = colorError + pluginName + ":> " + colorText + t.get(code, lang);
 				switch (code) {
 				case "RELAY_CHANNEL_NOTMEMBER":
-					baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
-					baseMessage.replace("PH_CMD",
+					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
+					baseMessage = baseMessage.replace("PH_CMD",
 							colorCommand + "/gi join " + wsmsg.subject + " [password]" + colorText);
 					break;
 				case "RELAY_UNREGISTER_CHOWNER":
 					// no placeholder
 					break;
 				case "RELAY_JOIN_NOACCESS":
-					baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
+					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
 					break;
 				case "RELAY_CHANNEL_UNKNOWN":
-					baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
-					baseMessage.replace("PH_CMD",
+					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
+					baseMessage = baseMessage.replace("PH_CMD",
 							colorCommand + "/gi create " + wsmsg.subject + " [password]" + colorText);
 					break;
 				case "RELAY_LEAVE_OWNER":
-					baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
-					baseMessage.replace("PH_CMD", colorCommand + "/gi close " + wsmsg.subject + colorText);
+					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
+					baseMessage = baseMessage.replace("PH_CMD",
+							colorCommand + "/gi close " + wsmsg.subject + colorText);
+					break;
+				case "RELAY_CREATE_NOGLOBAL":
+					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
+					break;
+				case "RELAY_CREATE_LENGTH":
+					break;
+				case "RELAY_CREATE_EXISTS":
+					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
+					baseMessage = baseMessage.replace("PH_CMD", colorCommand + "/gi join " + wsmsg.subject + colorText);
+					break;
+				case "RELAY_CH_CLOSE_NOTEXISTS":
+					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
+					break;
+				case "RELAY_CH_CLOSE_NOTOWNER":
+					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
+					break;
+				case "RELAY_CH_CLOSED":
+					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
 					break;
 				default:
 					break;
@@ -565,12 +613,17 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 					// no placeholder
 					break;
 				case "RELAY_JOIN_SUCCESS":
-					baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
+					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
 					break;
 				case "RELAY_LEAVE_SUCCESS":
-					baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
+					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
 					break;
-
+				case "RELAY_CREATE_SUCCESS":
+					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
+					break;
+				case "RELAY_CH_CLOSE_SUCCESS":
+					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
+					break;
 				default:
 					break;
 				}
@@ -581,7 +634,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 				// switch (code) {
 
 				// default:
-				// 	break;
+				// break;
 				// }
 				player.sendTextMessage(baseMessage);
 			} else {
