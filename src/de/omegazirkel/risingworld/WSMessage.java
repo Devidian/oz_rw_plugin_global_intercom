@@ -13,6 +13,10 @@ public class WSMessage<T> {
 
 	public final String event;
 	public final T payload;
+	public final String subject = null;
+	public final String infoCode = null;
+	public final String successCode = null;
+	public final String errorCode = null;
 
 	WSMessage(String event, T payload) {
 		this.payload = payload;

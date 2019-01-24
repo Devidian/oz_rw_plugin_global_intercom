@@ -55,12 +55,12 @@ public class WSClientEndpoint {
 			@Override
 			public boolean onDisconnect(CloseReason closeReason) {
 				final int i = ++counter;
-				GlobalIntercom.log("WebSocket got disconnected: " + closeReason.toString(), 999);
+				GlobalIntercom.log.out("WebSocket got disconnected: " + closeReason.toString(), 999);
 				if (closeReason.getCloseCode() == CloseCodes.CLOSED_ABNORMALLY) {
-					GlobalIntercom.log("WebSocket reconnecting... " + i, 0);
+					GlobalIntercom.log.out("WebSocket reconnecting... " + i, 0);
 					return true;
 				} else {
-					GlobalIntercom.log("WebSocket not reconnecting.", 0);
+					GlobalIntercom.log.out("WebSocket not reconnecting.", 0);
 					return false;
 				}
 			}
@@ -68,12 +68,12 @@ public class WSClientEndpoint {
 			@Override
 			public boolean onConnectFailure(Exception exception) {
 				final int i = ++counter;
-				GlobalIntercom.log("WebSocket failed to connect: " + exception.getMessage(), 999);
+				GlobalIntercom.log.out("WebSocket failed to connect: " + exception.getMessage(), 999);
 				// if (i <= 30) {
-				GlobalIntercom.log("WebSocket reconnecting... " + i, 0);
+				GlobalIntercom.log.out("WebSocket reconnecting... " + i, 0);
 				return true;
 				// } else {
-				// GlobalIntercom.log("WebSocket not reconnecting.", 0);
+				// GlobalIntercom.log.out("WebSocket not reconnecting.", 0);
 				// return false;
 				// }
 			}
@@ -87,10 +87,10 @@ public class WSClientEndpoint {
 	 */
 	private void connect() {
 		try {
-			GlobalIntercom.log("WebSocket connecting to " + this.endpointURI, 0);
+			GlobalIntercom.log.out("WebSocket connecting to " + this.endpointURI, 0);
 			this.session = this.client.connectToServer(this, this.endpointURI);
 		} catch (IOException | DeploymentException e) {
-			GlobalIntercom.log(e.getMessage(), 999);
+			GlobalIntercom.log.out(e.getMessage(), 999);
 		}
 	}
 
@@ -101,7 +101,7 @@ public class WSClientEndpoint {
 	 */
 	@OnError
 	public void onError(Session session, Throwable t) {
-		GlobalIntercom.log(t.toString(), 999);
+		GlobalIntercom.log.out(t.toString(), 999);
 
 	}
 
@@ -113,7 +113,7 @@ public class WSClientEndpoint {
 	public void onOpen(Session session) {
 		this.session = session;
 		this.isConnected = true;
-		GlobalIntercom.log("WebSocket connected!", 0);
+		GlobalIntercom.log.out("WebSocket connected!", 0);
 	}
 
 	/**
@@ -126,7 +126,7 @@ public class WSClientEndpoint {
 		this.session = null;
 		this.isConnected = false;
 		// disconnectCount++;
-		GlobalIntercom.log("WebSocket closed: " + reason.toString(), 999);
+		GlobalIntercom.log.out("WebSocket closed: " + reason.toString(), 999);
 		// todo: do not retry after x disconnects
 		// try {
 		// this.connect(); // reconnect
