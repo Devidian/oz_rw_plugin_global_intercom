@@ -1,5 +1,16 @@
 ## [Unreleased]
 
+## [0.8.1] - 2019-01-25
+### Added
+- Übersetzungsdatei für französisch hinzugefügt (fr) übersetzt durch google
+- Übersetzungsdatei für russisch hinzugefügt (ru) übersetzt durch google
+- `/gi status` zeigt deine aktuelle spiel und systemsprache
+- `/gi status` zeigt die verwendete sprachdatei
+
+### Changed
+- motd ist nun standardmäßig aus
+- Zur Ermittlung der Sprache wird nun `player.getSystemLanguage()` statt `player.getLanguage()` verwendet
+- aktualisierte Version meienr tools.jar auf 0.2.0 WICHTIG: Wenn du auch mein DiscordPlugin verwendest, vergewissere dich das beide 0.2.0 im /lib ordner haben. entferne alle anderen versionen.
 
 ## [0.8.0] - 2019-01-24
 ### Added

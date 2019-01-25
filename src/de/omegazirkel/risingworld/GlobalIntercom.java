@@ -39,7 +39,7 @@ import net.risingworld.api.objects.Player;
  */
 public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
-	static final String pluginVersion = "0.8.0";
+	static final String pluginVersion = "0.8.1-SNAPSHOT";
 	static final String pluginName = "GlobalIntercom";
 
 	static final de.omegazirkel.risingworld.tools.Logger log = new de.omegazirkel.risingworld.tools.Logger("[OZ.GI]");
@@ -88,7 +88,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 	private void transmitMessageWS(Player player, WSMessage<?> wsmsg) {
 		GsonBuilder gsb = new GsonBuilder();
 		Gson gson = gsb.create();
-		String lang = player.getLanguage();
+		String lang = player.getSystemLanguage();
 
 		try {
 			if (ws.isConnected) {
@@ -138,8 +138,9 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 	public void onPlayerCommand(PlayerCommandEvent event) {
 		Player player = event.getPlayer();
 		String command = event.getCommand();
-		String lang = event.getPlayer().getLanguage();
+		String lang = event.getPlayer().getSystemLanguage();
 		GlobalIntercomPlayer giPlayer = playerMap.get(player.getUID() + "");
+		
 
 		String[] cmd = command.split(" ");
 
@@ -252,10 +253,10 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 					overrideStatus = colorError + t.get("STATE_OFF", lang);
 				}
 
-				
-
-				String statusMessage = t.get("MSG_CMD_STATUS", lang).replace("PH_VERSION",
-						colorOkay + pluginVersion + colorText)
+				String statusMessage = t.get("MSG_CMD_STATUS", lang)
+						.replace("PH_VERSION", colorOkay + pluginVersion + colorText)
+						.replace("PH_LANGUAGE", colorSelf + lang + " / " + player.getSystemLanguage() + colorText)
+						.replace("PH_USEDLANG", colorOther + t.getLanguageUsed(lang) + colorText)
 						.replace("PH_STATE_WS", wsStatus + colorText)
 						.replace("PH_STATE_CH", colorCommand + lastCH + colorText)
 						.replace("PH_STATE_SAVE", saveStatus + colorText)
@@ -313,7 +314,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 		String message = event.getChatMessage();
 		String chatMessage;
 		String channel;
-		String lang = event.getPlayer().getLanguage();
+		String lang = event.getPlayer().getSystemLanguage();
 		String noColorText = message.replaceFirst("(\\[#[a-fA-F]+\\])", "");
 		GlobalIntercomPlayer giPlayer = playerMap.get(player.getUID() + "");
 		if (giPlayer == null) {
@@ -472,7 +473,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
 	/**
 	 *
-	 * @version 0.8.0
+	 * @version 0.8.1-SNAPSHOT
 	 * @param cmsg
 	 */
 	private void broadcastMessage(ChatMessage cmsg) {
@@ -512,7 +513,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 			GlobalIntercomPlayer giPlayer = wsmsg.payload;
 			playerMap.put(giPlayer._id, giPlayer);
 			Player player = getServer().getPlayer(Long.parseLong(giPlayer._id));
-			String lang = player.getLanguage();
+			String lang = player.getSystemLanguage();
 
 			if (wsm.event.contentEquals("directContactMessage")) {
 				// Not yet implemented
@@ -526,7 +527,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 					msg.channel = defaultChannel;
 					this.transmitMessageWS(player, new WSMessage<>("playerJoinChannel", msg));
 					// event.getPlayer().setAttribute("gi." + defaultChannel, true);
-					// String lang = event.getPlayer().getLanguage();
+					// String lang = event.getPlayer().getSystemLanguage();
 				}
 			} else if (wsm.event.contentEquals("playerOffline")) {
 				// Currently nothing to do here

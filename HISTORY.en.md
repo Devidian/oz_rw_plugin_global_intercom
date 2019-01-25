@@ -1,5 +1,16 @@
 ## [Unreleased]
 
+## [0.8.1] - 2019-01-25
+### Added
+- translation file for french (fr) translated by google from en
+- translation file for russian (ru) translated by  (initialized by google translation from en)
+- `/gi status` shows your current locale (en,de,...) and system locale
+- `/gi status` shows the used locale (en,de,...)
+
+### Changed
+- motd is now false by default
+- now `player.getSystemLanguage()` is used instead of `player.getLanguage()`
+- updated version of tools.jar (0.2.0) IMPORTANT: if you use my DiscordPlugin too, be sure both have 0.2.0! remove all lower versions!
 
 ## [0.8.0] - 2019-01-24
 ### Added
