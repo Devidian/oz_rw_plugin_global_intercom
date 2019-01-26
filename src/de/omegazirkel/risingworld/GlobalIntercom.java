@@ -39,7 +39,7 @@ import net.risingworld.api.objects.Player;
  */
 public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
-	static final String pluginVersion = "0.8.1-SNAPSHOT";
+	static final String pluginVersion = "0.8.1";
 	static final String pluginName = "GlobalIntercom";
 
 	static final de.omegazirkel.risingworld.tools.Logger log = new de.omegazirkel.risingworld.tools.Logger("[OZ.GI]");
@@ -473,7 +473,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
 	/**
 	 *
-	 * @version 0.8.1-SNAPSHOT
+	 * @version 0.8.1
 	 * @param cmsg
 	 */
 	private void broadcastMessage(ChatMessage cmsg) {
