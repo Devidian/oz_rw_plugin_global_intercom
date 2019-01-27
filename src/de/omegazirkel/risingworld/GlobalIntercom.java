@@ -39,7 +39,7 @@ import net.risingworld.api.objects.Player;
  */
 public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
-	static final String pluginVersion = "0.8.1";
+	static final String pluginVersion = "0.8.2";
 	static final String pluginName = "GlobalIntercom";
 
 	static final de.omegazirkel.risingworld.tools.Logger log = new de.omegazirkel.risingworld.tools.Logger("[OZ.GI]");
@@ -255,7 +255,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
 				String statusMessage = t.get("MSG_CMD_STATUS", lang)
 						.replace("PH_VERSION", colorOkay + pluginVersion + colorText)
-						.replace("PH_LANGUAGE", colorSelf + lang + " / " + player.getSystemLanguage() + colorText)
+						.replace("PH_LANGUAGE", colorSelf + player.getLanguage() + " / " + player.getSystemLanguage() + colorText)
 						.replace("PH_USEDLANG", colorOther + t.getLanguageUsed(lang) + colorText)
 						.replace("PH_STATE_WS", wsStatus + colorText)
 						.replace("PH_STATE_CH", colorCommand + lastCH + colorText)

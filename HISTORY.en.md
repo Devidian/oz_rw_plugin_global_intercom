@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [0.8.2] - 2019-01-27
+### Changed
+- the plugin-shared lib `tools.jar` must now be placed into `/plugins/shared/lib/tools.jar`
+- ru.properties now translated by `Galochka`
+
 ## [0.8.1] - 2019-01-25
 ### Added
 - translation file for french (fr) translated by google from en

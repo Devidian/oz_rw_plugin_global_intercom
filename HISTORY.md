@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [0.8.2] - 2019-01-27
+### Changed
+- Die plugin-übergreifende `tools.jar` muss nun unter `/plugins/shared/lib/tools.jar` zur Verfügung stehen
+- Die russische Übersetzung ist nun von `Galochka`
+
 ## [0.8.1] - 2019-01-25
 ### Added
 - Übersetzungsdatei für französisch hinzugefügt (fr) übersetzt durch google
