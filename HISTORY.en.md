@@ -1,5 +1,18 @@
 ## [Unreleased]
 
+
+## [0.8.2] - 2019-01-29
+### Changed
+- now using tools.jar in version 0.3.0
+
+### Fixed
+- translation (ru) by Galochka updated (some non-latin-letters)
+- missing `break;` in `/gi save` command
+- `/gi join` and `/gi leave` could not be called without channel name
+
+### Removed
+- no more listener to `registerPlayer` & `unregisterPlayer` events
+
 ## [0.8.2] - 2019-01-27
 ### Changed
 - the plugin-shared lib `tools.jar` must now be placed into `/plugins/shared/lib/tools.jar`
@@ -23,7 +36,7 @@
 - i18n files for translation (de/en)
 - translated almost every texts
 - you can create your own channels with passwords if you like (must save your settings on the server therefore)
-- now using `de.omegazirkel.risingworld.tools` package for logging 
+- now using `de.omegazirkel.risingworld.tools` package for logging
 - new Command `/gi save true|false`
 - new Command `/gi create channelname [password]`
 - new Command `/gi close channelname`
@@ -51,7 +64,7 @@
 
 ### Fixed
 - if you try posting into a GI channel that you have not joined yet, you will get a notice but your text does not proceed to local chat anymore.
-- if you just want to change your chatOverride channel back to local you can now do this with just typing `#%`. There will be no empty message now. 
+- if you just want to change your chatOverride channel back to local you can now do this with just typing `#%`. There will be no empty message now.
 
 ## [0.6.1] - 2019-01-05
 ### Changed

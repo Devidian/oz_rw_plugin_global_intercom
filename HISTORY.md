@@ -1,5 +1,18 @@
 ## [Unreleased]
 
+
+## [0.8.2] - 2019-01-29
+### Changed
+- verwendet nun die tools.jar in Version 0.3.0
+
+### Fixed
+- Übersetzung von Galochka hatte noch Kyrillische Zeichen
+- fehlendes `break;` bei `/gi save` Befehl
+- `/gi join` und `/gi leave` konnten nicht mehr ohne Kanalnamen aufgerufen werden
+
+### Removed
+- Es wird nicht mehr auf die Events `registerPlayer` und `unregisterPlayer` reagiert
+
 ## [0.8.2] - 2019-01-27
 ### Changed
 - Die plugin-übergreifende `tools.jar` muss nun unter `/plugins/shared/lib/tools.jar` zur Verfügung stehen
@@ -23,7 +36,7 @@
 - i18n dateien zur Übersetzung (de/en)
 - so ziemlich alle Texte wurden übersetzt
 - man kann nun eigene Kanäle erstellen (auch mit Passwort), wenn man seine Einstellungen auf dem Server speichern lässt.
-- verwende jetzt das Paket `de.omegazirkel.risingworld.tools` zum logging 
+- verwende jetzt das Paket `de.omegazirkel.risingworld.tools` zum logging
 
 ### Changed
 - Alle player.attributes bis auf den aktuellen chat Kanal wurden in die Klasse GiPlayer verschoben
@@ -49,7 +62,7 @@
 ### Added
 - Neue Einstellung `joinDefault=false` wenn dieser Wert auf `true` gesetzt wird, tritt jeder Spieler beim connecten dem standard Kanal bei, damit ist es Möglich auf servern das standard-beitreten zu deaktivieren um Spieler die dieses Plugin nicht nutzen möchten nicht zu nerven ;)
 ### Fixed
-- wenn man versucht in einen Kanal zu posten in dem man nicht selbst beigetreten ist, wird der text nicht mehr automatisch in den lokalen chat geschrieben. 
+- wenn man versucht in einen Kanal zu posten in dem man nicht selbst beigetreten ist, wird der text nicht mehr automatisch in den lokalen chat geschrieben.
 - wenn man nur den standard-kanal zurück zum lokalen chat wechseln möchte, kann man nun einfach `#%` eingeben. Es erscheint kein leerer text mehr im chat.
 
 ### [0.6.1] - 2019-01-05

@@ -39,7 +39,7 @@ import net.risingworld.api.objects.Player;
  */
 public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
-	static final String pluginVersion = "0.8.2";
+	static final String pluginVersion = "0.8.3";
 	static final String pluginName = "GlobalIntercom";
 
 	static final de.omegazirkel.risingworld.tools.Logger log = new de.omegazirkel.risingworld.tools.Logger("[OZ.GI]");
@@ -140,7 +140,6 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 		String command = event.getCommand();
 		String lang = event.getPlayer().getSystemLanguage();
 		GlobalIntercomPlayer giPlayer = playerMap.get(player.getUID() + "");
-		
 
 		String[] cmd = command.split(" ");
 
@@ -164,6 +163,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 							+ t.get("MSG_CMD_ERR_ARGUMENTS", lang).replace("PH_CMD", colorError + command + colorText)
 									.replace("PH_COMMAND_HELP", colorCommand + "/gi save true|false\n" + colorText));
 				}
+				break;
 			case "create": {
 				if (cmd.length > 2) {
 					PlayerCreateChannelMessage msg = new PlayerCreateChannelMessage(player);
@@ -195,9 +195,13 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 			}
 				break;
 			case "join": {
-
 				PlayerJoinChannelMessage msg = new PlayerJoinChannelMessage(player);
-				msg.channel = cmd[2].toLowerCase();
+				
+				if (cmd.length > 2) {
+					msg.channel = cmd[2].toLowerCase();
+				} else{
+					msg.channel = defaultChannel;
+				}
 				if (cmd.length > 3) {
 					msg.password = cmd[3];
 				}
@@ -208,7 +212,11 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 			case "leave": {
 
 				PlayerLeaveChannelMessage msg = new PlayerLeaveChannelMessage(player);
-				msg.channel = cmd[2].toLowerCase();
+				if (cmd.length > 2) {
+					msg.channel = cmd[2].toLowerCase();
+				} else{
+					msg.channel = defaultChannel;
+				}
 				WSMessage<PlayerLeaveChannelMessage> wsmsg = new WSMessage<>("playerLeaveChannel", msg);
 				this.transmitMessageWS(player, wsmsg);
 
@@ -255,8 +263,10 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
 				String statusMessage = t.get("MSG_CMD_STATUS", lang)
 						.replace("PH_VERSION", colorOkay + pluginVersion + colorText)
-						.replace("PH_LANGUAGE", colorSelf + player.getLanguage() + " / " + player.getSystemLanguage() + colorText)
+						.replace("PH_LANGUAGE",
+								colorSelf + player.getLanguage() + " / " + player.getSystemLanguage() + colorText)
 						.replace("PH_USEDLANG", colorOther + t.getLanguageUsed(lang) + colorText)
+						.replace("PH_LANG_AVAILABLE", colorOkay + t.getLanguageAvailable() + colorText)
 						.replace("PH_STATE_WS", wsStatus + colorText)
 						.replace("PH_STATE_CH", colorCommand + lastCH + colorText)
 						.replace("PH_STATE_SAVE", saveStatus + colorText)
@@ -517,11 +527,15 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
 			if (wsm.event.contentEquals("directContactMessage")) {
 				// Not yet implemented
-			} else if (wsm.event.contentEquals("registerPlayer")) {
-				player.sendTextMessage(colorOkay + pluginName + ":> " + colorText + t.get("MSG_REGISTERED", lang));
-			} else if (wsm.event.contentEquals("unregisterPlayer")) {
-				player.sendTextMessage(colorOkay + pluginName + ":> " + colorText + t.get("MSG_UNREGISTERED", lang));
-			} else if (wsm.event.contentEquals("playerOnline")) {
+			}
+			// else if (wsm.event.contentEquals("registerPlayer")) {
+			// player.sendTextMessage(colorOkay + pluginName + ":> " + colorText +
+			// t.get("MSG_REGISTERED", lang));
+			// } else if (wsm.event.contentEquals("unregisterPlayer")) {
+			// player.sendTextMessage(colorOkay + pluginName + ":> " + colorText +
+			// t.get("MSG_UNREGISTERED", lang));
+			// }
+			else if (wsm.event.contentEquals("playerOnline")) {
 				if (!giPlayer.saveSettings && joinDefault && !giPlayer.isInChannel(defaultChannel)) {
 					PlayerJoinChannelMessage msg = new PlayerJoinChannelMessage(player);
 					msg.channel = defaultChannel;
@@ -580,6 +594,9 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
 					baseMessage = baseMessage.replace("PH_CMD",
 							colorCommand + "/gi close " + wsmsg.subject + colorText);
+					break;
+				case "RELAY_CREATE_NOTREGISTERED":
+					// no replacements
 					break;
 				case "RELAY_CREATE_NOGLOBAL":
 					baseMessage = baseMessage.replace("PH_CHANNEL", colorWarning + wsmsg.subject + colorText);
