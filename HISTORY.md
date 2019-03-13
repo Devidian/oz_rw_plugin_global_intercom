@@ -1,5 +1,10 @@
 ## [Unreleased]
-
+### Changed
+- verwendet nun die tools.jar in Version 0.4.1
+- textfarben wurden aus `GlobalIntercom` Klasse entfernt, Colors aus tools wird jetzt verwendet
+- MOTD entfernt, heisst jetzt Plugin Welcome Message und kann nur noch ein und aus geschaltet werden, definition des textes ist jetzt in den Sprachdateien, damit jeder Spieler die Nachricht in seiner Sprache lesen kann (sofern übersetzt wurde)
+- "Plugin geladen" Meldung wird jetzt in onEnabled gefeuert
+- in initSettings wird jetzt "Einstellungen geladen" in das serverlog geschrieben
 
 ## [0.8.2] - 2019-01-29
 ### Changed
