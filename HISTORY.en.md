@@ -9,7 +9,7 @@
 - Plugin enabled message now triggert in onEnabled
 - initSettings now sends settings loaded message to serverlog
 ### Added
-- if you write `+sceen` into a message, a screenshot will be uploaded that can be viewed in discord (not ingame on other servers!)
+- if you write `+screen` into a message, a screenshot will be uploaded that can be viewed in discord (not ingame on other servers!)
 - in the `settings.properties` you can set screenshots on/off and the maximum screen resolution (width of the image)
 
 ## [0.8.2] - 2019-01-29
