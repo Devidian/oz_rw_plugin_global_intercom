@@ -15,7 +15,7 @@ import net.risingworld.api.objects.Player;
  */
 public class ChatMessage {
 
-	public static int version = 1;
+	public static int version = 2;
 
 	// Object properties
 	public Date createdOn;
@@ -27,6 +27,7 @@ public class ChatMessage {
 	public String sourceName;
 	public String sourceIP;
 	public String sourceVersion;
+	public String attachment;		// base64 encoded attachment
 
 	ChatMessage(Player player, Server server, String msg, String ch) {
 		this.createdOn = new Date();
