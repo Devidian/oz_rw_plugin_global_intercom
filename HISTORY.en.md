@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.10.0] - 2019-03-18
+### Added
+- property `restartOnUpdate` in `settings.properties` should now work.
+### Changed
+- Command `help|info` was split, `help` now shows commands, `info` shows plugin description (coming soon)
+
 
 ## [0.9.0] - 2019-03-15
 ### Changed

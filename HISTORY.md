@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [0.10.0] - 2019-03-18
+### Added
+- die Einstellung `restartOnUpdate` in der `settings.properties` sollte jetzt funktionieren.
+### Changed
+- Befehl `help|info` wurde aufgesplittet, `help` zeigt nun die Befehle, `info` eine Plugin Beschreibung (kommt noch)
 
 ## [0.9.0] - 2019-03-15
 ### Changed

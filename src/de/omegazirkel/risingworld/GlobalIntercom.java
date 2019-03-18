@@ -10,6 +10,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import de.omegazirkel.risingworld.WSClientEndpoint.MessageHandler;
 import de.omegazirkel.risingworld.tools.Colors;
+import de.omegazirkel.risingworld.tools.FileChangeListener;
 import de.omegazirkel.risingworld.tools.I18n;
 
 import java.awt.image.BufferedImage;
@@ -22,6 +23,7 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +32,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
 
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
@@ -46,9 +50,9 @@ import net.risingworld.api.objects.Player;
  *
  * @author Maik Laschober
  */
-public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
+public class GlobalIntercom extends Plugin implements Listener, MessageHandler, FileChangeListener {
 
-	static final String pluginVersion = "0.9.0";
+	static final String pluginVersion = "0.10.0";
 	static final String pluginName = "GlobalIntercom";
 	static final String pluginCMD = "gi";
 
@@ -71,6 +75,8 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 	static boolean allowScreenshots = true;
 	static int maxScreenWidth = 1920;
 	// END Settings
+
+	static boolean flagRestart = false;
 
 	// WebSocket
 	static WSClientEndpoint ws;
@@ -134,11 +140,22 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
 	@EventMethod
 	public void onPlayerDisconnect(PlayerDisconnectEvent event) {
+		Server server = getServer();
 		Player player = event.getPlayer();
 		PlayerOfflineMessage msg = new PlayerOfflineMessage(player);
 		WSMessage<PlayerOfflineMessage> wsmsg = new WSMessage<>("playerOffline", msg);
 
 		this.transmitMessageWS(player, wsmsg);
+
+		if (flagRestart) {
+			int playersLeft = server.getPlayerCount() - 1;
+			if (playersLeft == 0) {
+				log.out("Last player left the server, shutdown now due to flagRestart is set", 100); // INFO LEVEL
+				server.shutdown();
+			} else if (playersLeft > 1) {
+				this.broadcastMessage("BC_PLAYER_REMAIN", playersLeft);
+			}
+		}
 	}
 
 	@EventMethod
@@ -231,22 +248,26 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 
 			}
 				break;
-			case "help":
 			case "info":
-				String infoMessage = t.get("MSG_CMD_INFO", lang)
+				String infoMessage = t.get("CMD_INFO", lang);
+				player.sendTextMessage(c.okay + pluginName + ":> " + infoMessage);
+				break;
+			case "help":
+				String helpMessage = t.get("CMD_HELP", lang)
 						.replace("PH_CMD_JOIN", c.command + "/" + pluginCMD + " join channelname [password]" + c.text)
 						.replace("PH_CMD_LEAVE", c.command + "/" + pluginCMD + " leave channelname" + c.text)
 						.replace("PH_CMD_CHAT_DEFAULT", c.command + "#HelloWorld" + c.text)
 						.replace("PH_CMD_CHAT_OTHER", c.command + "##other HelloWorld" + c.text)
 						.replace("PH_CMD_CHAT_LOCAL", c.command + "#%local HelloWorld" + c.text)
 						.replace("PH_CMD_OVERRIDE", c.command + "/" + pluginCMD + " override true|false" + c.text)
-						.replace("PH_CMD_HELP", c.command + "/" + pluginCMD + " help|info" + c.text)
+						.replace("PH_CMD_HELP", c.command + "/" + pluginCMD + " help" + c.text)
+						.replace("PH_CMD_INFO", c.command + "/" + pluginCMD + " info" + c.text)
 						.replace("PH_CMD_STATUS", c.command + "/" + pluginCMD + " status" + c.text)
 						.replace("PH_CMD_CREATE",
 								c.command + "/" + pluginCMD + " create channelname [password]" + c.text)
 						.replace("PH_CMD_CLOSE", c.command + "/" + pluginCMD + " close channelname" + c.text)
 						.replace("PH_CMD_SAVE", c.command + "/" + pluginCMD + " save true|false" + c.text);
-				player.sendTextMessage(c.okay + pluginName + ":> " + infoMessage);
+				player.sendTextMessage(c.okay + pluginName + ":> " + helpMessage);
 				break;
 			case "status":
 				String lastCH = "lokal";
@@ -271,8 +292,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 					overrideStatus = c.error + t.get("STATE_OFF", lang);
 				}
 
-				String statusMessage = t.get("MSG_CMD_STATUS", lang)
-						.replace("PH_VERSION", c.okay + pluginVersion + c.text)
+				String statusMessage = t.get("CMD_STATUS", lang).replace("PH_VERSION", c.okay + pluginVersion + c.text)
 						.replace("PH_LANGUAGE",
 								colorSelf + player.getLanguage() + " / " + player.getSystemLanguage() + c.text)
 						.replace("PH_USEDLANG", colorOther + t.getLanguageUsed(lang) + c.text)
@@ -361,9 +381,9 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 				// this is a message into a special channel
 				String[] msgParts = noColorText.substring(2).split(" ", 2);
 				channel = msgParts[0].toLowerCase();
-				if(msgParts.length>1){
+				if (msgParts.length > 1) {
 					chatMessage = msgParts[1];
-				} else{
+				} else {
 					chatMessage = "";
 				}
 			} else {
@@ -413,11 +433,11 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 		ChatMessage cmsg = new ChatMessage(player, server, chatMessage, channel);
 
 		if (chatMessage.contains("+screen")) {
-			if (allowScreenshots==true) {
+			if (allowScreenshots == true) {
 				int playerResolutionX = player.getScreenResolutionX();
 				float sizeFactor = 1.0f;
 				if (playerResolutionX > maxScreenWidth) {
-					sizeFactor = maxScreenWidth*1f / playerResolutionX*1f;
+					sizeFactor = maxScreenWidth * 1f / playerResolutionX * 1f;
 				}
 
 				player.createScreenshot(sizeFactor, (BufferedImage bimg) -> {
@@ -427,7 +447,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 						cmsg.attachment = Base64.getEncoder().encodeToString(os.toByteArray());
 					} catch (Exception e) {
 						// throw new UncheckedIOException(ioe);
-						log.out("Exception on createScreenshot-> "+e.toString());
+						log.out("Exception on createScreenshot-> " + e.toString());
 						// e.printStackTrace();
 					}
 					cmsg.chatContent = chatMessage.replace("+screen", "[screenshot.jpg]");
@@ -688,6 +708,55 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler {
 			} else {
 				log.out("Unknown message type <" + wsm.event + ">");
 			}
+		}
+	}
+
+	// All stuff for plugin updates
+
+	/**
+	 *
+	 * @param i18nIndex
+	 * @param playerCount
+	 */
+	private void broadcastMessage(String i18nIndex, int playerCount) {
+		getServer().getAllPlayers().forEach((player) -> {
+			try {
+				String lang = player.getSystemLanguage();
+				player.sendTextMessage(c.warning + pluginName + ":> " + c.text
+						+ t.get(i18nIndex, lang).replace("PH_PLAYERS", playerCount + ""));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		});
+	}
+
+	@Override
+	public void onFileChangeEvent(Path file) {
+		if (file.toString().endsWith("jar")) {
+			if (restartOnUpdate) {
+				Server server = getServer();
+
+				if (server.getPlayerCount() > 0) {
+					flagRestart = true;
+					this.broadcastMessage("BC_UPDATE_FLAG", server.getPlayerCount());
+				} else {
+					log.out("onFileCreateEvent: <" + file + "> changed, restarting now (no players online)", 100);
+				}
+
+			} else {
+				log.out("onFileCreateEvent: <" + file + "> changed but restartOnUpdate is false", 0);
+			}
+		} else {
+			log.out("onFileCreateEvent: <" + file + ">", 0);
+		}
+	}
+
+	@Override
+	public void onFileCreateEvent(Path file) {
+		if (file.toString().endsWith("settings.properties")) {
+			this.initSettings();
+		} else {
+			log.out(file.toString() + " was changed", 0);
 		}
 	}
 }
