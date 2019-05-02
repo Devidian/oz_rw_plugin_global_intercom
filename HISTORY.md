@@ -1,124 +1,129 @@
 ## [Unreleased]
 
+## [0.10.0] - 2019-05-02
+### Fixed
+- Exception thrown when typeing `/gi` without parameter
+### Changed
+- default language of *.md files is now English
+
 ## [0.10.0] - 2019-03-18
 ### Added
-- die Einstellung `restartOnUpdate` in der `settings.properties` sollte jetzt funktionieren.
+- property `restartOnUpdate` in `settings.properties` should now work.
 ### Changed
-- Befehl `help|info` wurde aufgesplittet, `help` zeigt nun die Befehle, `info` eine Plugin Beschreibung (kommt noch)
+- Command `help|info` was split, `help` now shows commands, `info` shows plugin description (coming soon)
 
 ## [0.9.0] - 2019-03-15
 ### Changed
-- verwendet nun die tools.jar in Version 0.4.1
-- textfarben wurden aus `GlobalIntercom` Klasse entfernt, Colors aus tools wird jetzt verwendet
-- MOTD entfernt, heisst jetzt Plugin Welcome Message und kann nur noch ein und aus geschaltet werden, definition des textes ist jetzt in den Sprachdateien, damit jeder Spieler die Nachricht in seiner Sprache lesen kann (sofern übersetzt wurde)
-- "Plugin geladen" Meldung wird jetzt in onEnabled gefeuert
-- in initSettings wird jetzt "Einstellungen geladen" in das serverlog geschrieben
+- now using tools.jar in version 0.4.1
+- text colors were removed from `GlobalIntercom` class, now Colors from tools will be used
+- motd removed, its now called `plugin welcome message` and can only be turned on/off in the settings. The text definition has moved to the language files so every user can read the plugin welcome in his language (so far translated)
+- Plugin enabled message now triggert in onEnabled
+- initSettings now sends settings loaded message to serverlog
 ### Added
-- wenn `+screen` in eine Nachricht geschrieben wird, wird ein screenshot übermittelt der in Discord angezeigt werden kann (nicht ingame)
-- in den `settings.properties` kann eingestellt werden ob screenshots erlaubt sind und welche maximale Auflösung übertragen werden soll (angabe der breite)
+- if you write `+screen` into a message, a screenshot will be uploaded that can be viewed in discord (not ingame on other servers!)
+- in the `settings.properties` you can set screenshots on/off and the maximum screen resolution (width of the image)
 
 ## [0.8.2] - 2019-01-29
 ### Changed
-- verwendet nun die tools.jar in Version 0.3.0
+- now using tools.jar in version 0.3.0
 
 ### Fixed
-- Übersetzung von Galochka hatte noch Kyrillische Zeichen
-- fehlendes `break;` bei `/gi save` Befehl
-- `/gi join` und `/gi leave` konnten nicht mehr ohne Kanalnamen aufgerufen werden
+- translation (ru) by Galochka updated (some non-latin-letters)
+- missing `break;` in `/gi save` command
+- `/gi join` and `/gi leave` could not be called without channel name
 
 ### Removed
-- Es wird nicht mehr auf die Events `registerPlayer` und `unregisterPlayer` reagiert
+- no more listener to `registerPlayer` & `unregisterPlayer` events
 
 ## [0.8.2] - 2019-01-27
 ### Changed
-- Die plugin-übergreifende `tools.jar` muss nun unter `/plugins/shared/lib/tools.jar` zur Verfügung stehen
-- Die russische Übersetzung ist nun von `Galochka`
+- the plugin-shared lib `tools.jar` must now be placed into `/plugins/shared/lib/tools.jar`
+- ru.properties now translated by `Galochka`
 
 ## [0.8.1] - 2019-01-25
 ### Added
-- Übersetzungsdatei für französisch hinzugefügt (fr) übersetzt durch google
-- Übersetzungsdatei für russisch hinzugefügt (ru) übersetzt durch google
-- `/gi status` zeigt deine aktuelle spiel und systemsprache
-- `/gi status` zeigt die verwendete sprachdatei
+- translation file for french (fr) translated by google from en
+- translation file for russian (ru) translated by  (initialized by google translation from en)
+- `/gi status` shows your current locale (en,de,...) and system locale
+- `/gi status` shows the used locale (en,de,...)
 
 ### Changed
-- motd ist nun standardmäßig aus
-- Zur Ermittlung der Sprache wird nun `player.getSystemLanguage()` statt `player.getLanguage()` verwendet
-- aktualisierte Version meienr tools.jar auf 0.2.0 WICHTIG: Wenn du auch mein DiscordPlugin verwendest, vergewissere dich das beide 0.2.0 im /lib ordner haben. entferne alle anderen versionen.
+- motd is now false by default
+- now `player.getSystemLanguage()` is used instead of `player.getLanguage()`
+- updated version of tools.jar (0.2.0) IMPORTANT: if you use my DiscordPlugin too, be sure both have 0.2.0! remove all lower versions!
 
 ## [0.8.0] - 2019-01-24
 ### Added
-- Mehrere PlayerMessage Klassen hinzugefügt um erweiterte Kommunikation mit dem RelayServer zu ermöglichen
-- i18n dateien zur Übersetzung (de/en)
-- so ziemlich alle Texte wurden übersetzt
-- man kann nun eigene Kanäle erstellen (auch mit Passwort), wenn man seine Einstellungen auf dem Server speichern lässt.
-- verwende jetzt das Paket `de.omegazirkel.risingworld.tools` zum logging
+- Multiple PlayerMessage classes to handle extended communication with RelayServer
+- i18n files for translation (de/en)
+- translated almost every texts
+- you can create your own channels with passwords if you like (must save your settings on the server therefore)
+- now using `de.omegazirkel.risingworld.tools` package for logging
+- new Command `/gi save true|false`
+- new Command `/gi create channelname [password]`
+- new Command `/gi close channelname`
 
 ### Changed
-- Alle player.attributes bis auf den aktuellen chat Kanal wurden in die Klasse GiPlayer verschoben
-- man kann nun nur noch Kanälen beitreten, die vorher erstellt wurden
-- `/gi status` und `/gi help` wurden angepasst
-- `/gi status` zeigt nun auch die Kanäle denen man beigetreten ist
-- neues Kommando: `/gi create channelname [password]`
-- neues Kommando: `/gi save true|false`
-- neues Kommando: `/gi close channelname`
+- replaced all player.attributes except current default channel with GiPlayer object that holds these settings
+- you can now only join channels that were created before
+- `/gi status` and `/gi help` were adjusted
+- `/gi status` shows now a list of channels you are currently in
 
 ### Removed
-- Server Einstellung `overrideDefault` wurde entfernt. Spieler müssen dies nun selbst setzen, standard: aus
+- server settings `overrideDefault` was removed, only player settings count and will be false by default
 
 ## [0.7.2] - 2019-01-15
 ### Added
-- öffentliche methode zum Prüfen ob ein ChatEvent eine GI Nachricht ist
+- public method to check if an ChatEvent is a GI Chat Message
 
 ## [0.7.1] - 2019-01-15
 ### Fixed
-- null pointer exception onDisable()
+- null pointer exception caused in onDisable()
 
 ## [0.7.0] - 2019-01-08
 ### Added
-- Neue Einstellung `joinDefault=false` wenn dieser Wert auf `true` gesetzt wird, tritt jeder Spieler beim connecten dem standard Kanal bei, damit ist es Möglich auf servern das standard-beitreten zu deaktivieren um Spieler die dieses Plugin nicht nutzen möchten nicht zu nerven ;)
-### Fixed
-- wenn man versucht in einen Kanal zu posten in dem man nicht selbst beigetreten ist, wird der text nicht mehr automatisch in den lokalen chat geschrieben.
-- wenn man nur den standard-kanal zurück zum lokalen chat wechseln möchte, kann man nun einfach `#%` eingeben. Es erscheint kein leerer text mehr im chat.
+- new settings `joinDefault=false`. If you set this to `true`, players will join default channel on connect (~ like before < 0.7.0). This allows servers to deactivate default channels for players that don't like to chat and might get annoyed when they have to leave the channel everytime.
 
-### [0.6.1] - 2019-01-05
+### Fixed
+- if you try posting into a GI channel that you have not joined yet, you will get a notice but your text does not proceed to local chat anymore.
+- if you just want to change your chatOverride channel back to local you can now do this with just typing `#%`. There will be no empty message now.
+
+## [0.6.1] - 2019-01-05
 ### Changed
-- `/gi info` Ausgabe etwas angepasst
-- Projekt ist jetzt ein Maven Projekt
+- `/gi info` slightly changed output
+- project is now a maven project
 
 ### Added
-- `/gi status` zeigt nun die installierte Plugin version an
+- `/gi status` shows now plugin version
 
-### [0.6.0]
-- Geändert: MongoDB Bibliotheken entfernt, Plugin nutzt jetzt WebSocket für den Versand und Empfang von Nachrichten
+## [0.6.0]
+- changed: replaced MongoDB libs with WebSocket, no direct database access from now on.
 
-### [0.5.0]
-- Behoben: die ersten 2 Zeichen im lokalen chat wurden versehentlich abgeschnitten
-- Geändert: chat-override ist jetzt in der standard Konfiguration aus, zum ändern in der `settings.properties` wieder auf `true` setzen
-- Neu: Spieler können die chat-override Funktion selbst aktivieren oder deaktivieren. Einfach `/gi override [true|false]` eingeben um die Server-Einstellung zu überschreiben. Dies wird im Moment leider nur für die aktuelle Sitzung gespeichert und muss bei erneutem Login wieder eingegeben werden.
+## [0.5.0]
+- fixed: in local chat the first to letters were cut off accidently
+- changed: chat-override is now off (false) by default, turn it on in your `settings.properties` if you like
+- new command: you can force chat-override to be on or off by yourself as player. Just type `/gi override [true|false]` to override server settings (this is currently stored per session, you have to set it on every new login to mp or sp game)
 
-### [0.4.1]
-- Geändert: unnötige Leerzeichen vor und hinter der text Nachricht werden nun entfernt
+## [0.4.1]
+- Change/Fix: whitespaces before and after chat message will now be removed
 
-### [0.4.0]
-- Neu: gi merkt sich wo du zuletzt geschrieben hast, einfach enter drücken und normal schreiben. Mit `#%text` kommst du wieder in den lokalen chat deines Servers. Dies wird nach erneutem Login auf den Standardwert zurückgesetzt (lokaler chat)
-- Neu: Die chat farben können in den `settings.properties` angepassst werden
-- Neu: `/gi status` zeigt den aktuellen chat kanal und den status der Datenbankverbindung an.
-- Geändert: Nur Kanal+Name haben jetzt eine andere Farbe, der text ist weiss
+## [0.4.0]
+- new feature: gi remembers your last channel, just press enter and write! Type `#%text` to return to yourl local server chat. (this is stored per session and returns to default for each login)
+- new feature: Chat colors can be adjusted in `settings.properties`
+- new command: `/gi status` shows your current chat channel and the database connection status.
+- changed: Only channel and player name are colored, text is white (default)
 
-### [0.3.1]
-- Behoben: Datenbank neu aufgesetzt und standard-port auf 47017 geändert.
+## [0.3.1]
+- fixed: reinstalled database to fix access, changed default port to 47017
 
-### [0.3.0]
-- Neues Kommando: `/gi info` zeigt hilfe an
-- Neu: man kann jetzt die plugin-motd in der `settings.properties` Datei konfigurieren
-- Neu: man kann jetzt den standard kanal des servers in der `settings.properties` Datei ändern (Standard: `global`)
+## [0.3.0]
+- new command: `/gi info` shows usage
+- new: you can now configure motd in the `settings.properties` file
+- new: you can now change the default channel for your server in the `settings.properties` file (default: `global`)
 
-### [0.2.0]
-- Neu: Chat-Kanäle `/gi join|leave channelName`
-- Neu: global chat kann mit `/gi leave global` deaktiviert werden
+## [0.2.0]
+- new feature/command: Custom-Chat-Channels `/gi join|leave channelName` (Currently stored per session yo have to re-enter on each login)
+- new feature/command: global chat can be turned off by user with `/gi leave global`
 
-* *Anmerkung: aktive Kanäle werden zur Zeit nur pro Sitzung gespeichert und müssen bei jedem Login neu gesetzt werden (wird in Zukunft noch geändert)
-
-### [0.1.0]
-- initiales plugin, basis features
+## [0.1.0]
+- initial plugin, basic features

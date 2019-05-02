@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>de.omegazirkel.risingworld</groupId>
 	<artifactId>GlobalIntercom</artifactId>
-	<version>0.10.0</version>
+	<version>0.10.1</version>
 	<packaging>jar</packaging>
 	<dependencies>
 		<!-- https://mvnrepository.com/artifact/com.google.code.gson/gson -->
@@ -28,16 +28,16 @@
 		<dependency>
 			<groupId>net.risingworld</groupId>
 			<artifactId>PluginAPI</artifactId>
-			<version>0.9.5.2</version>
+			<version>0.9.5.4</version>
 			<scope>system</scope>
 			<systemPath>${basedir}/../libs/PluginAPI.jar</systemPath>
 		</dependency>
 		<dependency>
 			<groupId>de.omegazirkel.risingworld</groupId>
 			<artifactId>tools</artifactId>
-			<version>0.4.1</version>
+			<version>0.6.0</version>
 			<scope>system</scope>
-			<systemPath>${basedir}/../libs/tools-0.4.1.jar</systemPath>
+			<systemPath>${basedir}/../libs/tools-0.6.0.jar</systemPath>
 		</dependency>
 	</dependencies>
 	<build>

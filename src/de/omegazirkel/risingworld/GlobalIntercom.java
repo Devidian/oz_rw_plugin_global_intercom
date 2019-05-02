@@ -18,11 +18,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UncheckedIOException;
+// import java.io.UncheckedIOException;
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
+// import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.HashMap;
@@ -32,8 +32,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageWriteParam;
-import javax.imageio.ImageWriter;
+// import javax.imageio.ImageWriteParam;
+// import javax.imageio.ImageWriter;
 
 import net.risingworld.api.Plugin;
 import net.risingworld.api.Server;
@@ -52,7 +52,7 @@ import net.risingworld.api.objects.Player;
  */
 public class GlobalIntercom extends Plugin implements Listener, MessageHandler, FileChangeListener {
 
-	static final String pluginVersion = "0.10.0";
+	static final String pluginVersion = "0.10.1";
 	static final String pluginName = "GlobalIntercom";
 	static final String pluginCMD = "gi";
 
@@ -63,10 +63,10 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 	// Settings
 	static int logLevel = 0;
 	static boolean restartOnUpdate = true;
+	static boolean sendPluginWelcome = false;
 	static boolean joinDefault = false;
 	static URI webSocketURI;
 	static String defaultChannel = "global";
-	static boolean sendPluginWelcome = false;
 
 	static String colorOther = "[#3881f7]";
 	static String colorSelf = "[#37f7da]";
@@ -168,6 +168,13 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 		String[] cmd = command.split(" ");
 
 		if (cmd[0].equals("/" + pluginCMD)) {
+			// Invalid number of arguments (0)
+			if (cmd.length < 2) {
+				player.sendTextMessage(c.error + pluginName + ":>" + c.text
+						+ t.get("MSG_CMD_ERR_ARGUMENTS", lang).replace("PH_CMD", c.error + command + c.text)
+								.replace("PH_COMMAND_HELP", c.command + "/" + pluginCMD + " help\n" + c.text));
+				return;
+			}
 			String option = cmd[1];
 			// String channel = defaultChannel;
 			switch (option) {
