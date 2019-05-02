@@ -52,7 +52,7 @@ import net.risingworld.api.objects.Player;
  */
 public class GlobalIntercom extends Plugin implements Listener, MessageHandler, FileChangeListener {
 
-	static final String pluginVersion = "0.10.1";
+	static final String pluginVersion = "0.10.2";
 	static final String pluginName = "GlobalIntercom";
 	static final String pluginCMD = "gi";
 
@@ -340,7 +340,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 	public boolean isGIMessage(PlayerChatEvent event) {
 		Player player = event.getPlayer();
 		String message = event.getChatMessage();
-		String noColorText = message.replaceFirst("(\\[#[a-fA-F]+\\])", "");
+		String noColorText = message.replaceFirst("\\[[#0-9a-fA-F\\[\\]]+\\]#", "#");
 		GlobalIntercomPlayer giPlayer = playerMap.get(player.getUID() + "");
 		boolean override = giPlayer.override;
 		boolean isValidLastChannel = override && player.hasAttribute("gilastch")
@@ -360,7 +360,9 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 		String chatMessage;
 		String channel;
 		String lang = event.getPlayer().getSystemLanguage();
-		String noColorText = message.replaceFirst("(\\[#[a-fA-F]+\\])", "");
+		// log.out("message: "+message,0);
+		String noColorText = message.replaceFirst("\\[[#0-9a-fA-F\\[\\]]+\\]#", "#");
+		// log.out("noColorText: "+noColorText,0);
 		GlobalIntercomPlayer giPlayer = playerMap.get(player.getUID() + "");
 		if (giPlayer == null) {
 			if (noColorText.startsWith("#")) {
@@ -511,7 +513,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 			settings.load(new InputStreamReader(in, "UTF8"));
 			in.close();
 			// fill global values
-			logLevel = Integer.parseInt(settings.getProperty("logLevel", "0"));
+			logLevel = Integer.parseInt(settings.getProperty("logLevel", "1"));
 			webSocketURI = new URI(settings.getProperty("webSocketURI", "wss://rw.gi.omega-zirkel.de/ws"));
 			defaultChannel = settings.getProperty("defaultChannel", "global");
 			joinDefault = settings.getProperty("joinDefault", "true").contentEquals("true");

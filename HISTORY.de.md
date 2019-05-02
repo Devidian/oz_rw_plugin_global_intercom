@@ -1,7 +1,10 @@
 ## [Unreleased]
 
+## [0.10.2] - 2019-05-02
 ### Added
 - Minimale Installationsanweisungen in README.de.md hinzugefügt
+### Fixed
+- der reguläre Ausdruck für Farben kannte keine Zahlen (jetzt schon)
 
 ## [0.10.1] - 2019-05-02
 ### Fixed

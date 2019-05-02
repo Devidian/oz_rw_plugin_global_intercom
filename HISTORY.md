@@ -1,7 +1,10 @@
 ## [Unreleased]
 
+## [0.10.2] - 2019-05-02
 ### Added
 - Minimal installation information added to README.md
+### Fixed
+- regex for color string did not know numbers (now it does!)
 
 ## [0.10.1] - 2019-05-02
 ### Fixed
