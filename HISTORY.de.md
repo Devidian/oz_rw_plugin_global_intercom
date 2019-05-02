@@ -1,6 +1,6 @@
 ## [Unreleased]
 
-## [0.10.0] - 2019-05-02
+## [0.10.1] - 2019-05-02
 ### Fixed
 - Exception bei Eingabe von `/gi` ohne parameter
 ### Changed
