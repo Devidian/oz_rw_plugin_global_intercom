@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+### Added
+- Minimal installation information added to README.md
+
 ## [0.10.1] - 2019-05-02
 ### Fixed
 - Exception thrown when typeing `/gi` without parameter

@@ -1,11 +1,13 @@
 ## [Unreleased]
 
+### Added
+- Minimale Installationsanweisungen in README.de.md hinzugefügt
+
 ## [0.10.1] - 2019-05-02
 ### Fixed
 - Exception bei Eingabe von `/gi` ohne parameter
 ### Changed
 - Alle *.md files sind nun standardmäßig in englisch
-
 
 ## [0.10.0] - 2019-03-18
 ### Added
