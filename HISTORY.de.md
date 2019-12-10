@@ -1,5 +1,12 @@
 ## [Unreleased]
 
+## [0.11.0] - 2019-12-10
+### Changed
+- Klasse WSClientEndpoint nach tools 0.7.0 verschoben
+- Abhängigkeiten für websockets nach tools 0.7.0 verschoben
+### Fixed
+- nullPointerException im SP wenn GIPlayer nicht geladen wurde.
+
 ## [0.10.2] - 2019-05-02
 ### Added
 - Minimale Installationsanweisungen in README.de.md hinzugefügt

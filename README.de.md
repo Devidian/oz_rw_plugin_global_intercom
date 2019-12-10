@@ -10,7 +10,6 @@ Sollte wie folgt aussehen:
         ├── plugins
         │    ├── GlobalIntercom
         │    │    ├── i18n...
-        │    │    ├── lib...
         │    │    ├── HISTORY.de.md
         │    │    ├── HISTORY.md
         │    │    ├── OZ-GlobalIntercom-Plugin.jar
@@ -21,6 +20,9 @@ Sollte wie folgt aussehen:
         │    │    ├── assets...
         │    │    └── lib
         │    │         ├── HISTORY.md
+        │    │         ├── gson-2.8.5.jar
+        │    │         ├── javax.websocket-api-1.1.jar
+        │    │         ├── tyrus-standalone-client-1.15.jar
         │    │         └── tools.jar
         :    :
 ```

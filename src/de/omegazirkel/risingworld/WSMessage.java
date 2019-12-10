@@ -13,7 +13,9 @@ public class WSMessage<T> {
 
 	public final String event;
 	public final T payload;
+	// 
 	public final String subject = null;
+	// i18n codes
 	public final String infoCode = null;
 	public final String successCode = null;
 	public final String errorCode = null;

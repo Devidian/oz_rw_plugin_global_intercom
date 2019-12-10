@@ -8,13 +8,17 @@ package de.omegazirkel.risingworld;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
-import de.omegazirkel.risingworld.WSClientEndpoint.MessageHandler;
+// import de.omegazirkel.risingworld.GIWSEndpoint.MessageHandler;
+import de.omegazirkel.risingworld.tools.WSClientEndpoint.MessageHandler;
 import de.omegazirkel.risingworld.tools.Colors;
 import de.omegazirkel.risingworld.tools.FileChangeListener;
 import de.omegazirkel.risingworld.tools.I18n;
+import de.omegazirkel.risingworld.tools.PluginChangeWatcher;
+import de.omegazirkel.risingworld.tools.WSClientEndpoint;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -52,7 +56,7 @@ import net.risingworld.api.objects.Player;
  */
 public class GlobalIntercom extends Plugin implements Listener, MessageHandler, FileChangeListener {
 
-	static final String pluginVersion = "0.10.2";
+	static final String pluginVersion = "0.11.0";
 	static final String pluginName = "GlobalIntercom";
 	static final String pluginCMD = "gi";
 
@@ -87,8 +91,17 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 	public void onEnable() {
 		t = t != null ? t : new I18n(this);
 		registerEventListener(this);
+
 		this.initSettings();
 		this.initWebSocketClient();
+
+		try {
+			File f = new File(getPath());
+			PluginChangeWatcher.registerFileChangeListener(this, f);
+		} catch (Exception ex) {
+			log.out(ex.toString(), 911);
+		}
+
 		log.out(pluginName + " Plugin is enabled", 10);
 	}
 
@@ -132,10 +145,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 	@EventMethod
 	public void onPlayerConnect(PlayerConnectEvent event) {
 		Player player = event.getPlayer();
-		PlayerOnlineMessage msg = new PlayerOnlineMessage(player);
-		WSMessage<PlayerOnlineMessage> wsmsg = new WSMessage<>("playerOnline", msg);
-
-		this.transmitMessageWS(player, wsmsg);
+		sendPlayerOnlineNotification(player);
 	}
 
 	@EventMethod
@@ -288,15 +298,19 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 				}
 
 				String saveStatus = c.error + t.get("STATE_INACTIVE", lang);
-				if (giPlayer.saveSettings) {
+				if (giPlayer != null && giPlayer.saveSettings) {
 					saveStatus = c.okay + t.get("STATE_ACTIVE", lang);
 				}
 
 				String overrideStatus = "";
-				if (giPlayer.override) {
+				if (giPlayer != null && giPlayer.override) {
 					overrideStatus = c.okay + t.get("STATE_ON", lang);
 				} else {
 					overrideStatus = c.error + t.get("STATE_OFF", lang);
+				}
+				String playerChannelList = "";
+				if (giPlayer != null) {
+					playerChannelList = giPlayer.getChannelList();
 				}
 
 				String statusMessage = t.get("CMD_STATUS", lang).replace("PH_VERSION", c.okay + pluginVersion + c.text)
@@ -306,7 +320,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 						.replace("PH_LANG_AVAILABLE", c.okay + t.getLanguageAvailable() + c.text)
 						.replace("PH_STATE_WS", wsStatus + c.text).replace("PH_STATE_CH", c.command + lastCH + c.text)
 						.replace("PH_STATE_SAVE", saveStatus + c.text).replace("PH_STATE_OR", overrideStatus + c.text)
-						.replace("PH_CHLIST", c.command + giPlayer.getChannelList() + c.text);
+						.replace("PH_CHLIST", c.command + playerChannelList + c.text);
 
 				player.sendTextMessage(c.okay + pluginName + ":> " + statusMessage);
 				break;
@@ -342,7 +356,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 		String message = event.getChatMessage();
 		String noColorText = message.replaceFirst("\\[[#0-9a-fA-F\\[\\]]+\\]#", "#");
 		GlobalIntercomPlayer giPlayer = playerMap.get(player.getUID() + "");
-		boolean override = giPlayer.override;
+		boolean override = giPlayer != null && giPlayer.override;
 		boolean isValidLastChannel = override && player.hasAttribute("gilastch")
 				&& giPlayer.isInChannel((String) player.getAttribute("gilastch"));
 
@@ -371,7 +385,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 			}
 			return;
 		}
-		boolean override = giPlayer.override;
+		boolean override = giPlayer != null && giPlayer.override;
 
 		// long uid = player.getUID();
 
@@ -409,7 +423,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 						+ t.get("MSG_ERR_CH_LENGTH", lang).replace("PH_CHANNEL", channel));
 				event.setCancelled(true); // do not post to local chat
 				return;
-			} else if (!giPlayer.isInChannel(channel)) {
+			} else if (giPlayer == null || !giPlayer.isInChannel(channel)) {
 				player.sendTextMessage(c.error + pluginName + ":>" + c.text
 						+ t.get("MSG_ERR_CH_NOMEMBER", lang).replace("PH_CHANNEL", channel) + "\n"
 						+ t.get("MSG_INFO_CH_JOIN", lang).replace("PH_CMD_JOIN",
@@ -431,7 +445,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 			return; // no Global Intercom Chat message
 		}
 
-		if (!giPlayer.isInChannel(channel)) {
+		if (giPlayer == null || !giPlayer.isInChannel(channel)) {
 			// The player is not in that channel, return to local
 			player.deleteAttribute("gilastch");
 			event.setChatMessage(colorLocal + noColorText);
@@ -481,23 +495,38 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 	 */
 	@EventMethod
 	public void onPlayerSpawn(PlayerSpawnEvent event) {
+		Player player = event.getPlayer();
 		if (sendPluginWelcome) {
-			Player player = event.getPlayer();
 			String lang = player.getSystemLanguage();
 			player.sendTextMessage(t.get("MSG_PLUGIN_WELCOME", lang));
 		}
+
+		if (getServer().getType() == Server.Type.Singleplayer){
+			sendPlayerOnlineNotification(player);
+		}
+
+	}
+
+	/**
+	 *
+	 * @param player
+	 */
+	public void sendPlayerOnlineNotification(Player player) {
+		PlayerOnlineMessage msg = new PlayerOnlineMessage(player);
+		WSMessage<PlayerOnlineMessage> wsmsg = new WSMessage<>("playerOnline", msg);
+
+		this.transmitMessageWS(player, wsmsg);
 	}
 
 	/**
 	 *
 	 */
 	private void initWebSocketClient() {
-		// test
 		try {
-			ws = WSClientEndpoint.getInstance(webSocketURI);
+			ws = new WSClientEndpoint(webSocketURI);
 			ws.setMessageHandler(this);
 		} catch (Exception e) {
-			log.out(e.getMessage(), 999);
+			log.out(e.getMessage(), 911);
 			e.printStackTrace();
 		}
 	}
@@ -549,8 +578,8 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 			if (!playerMap.containsKey(player.getUID() + "")) {
 				return; // Player not initialized with GI
 			}
-			GlobalIntercomPlayer gip = playerMap.get(player.getUID() + "");
-			if (gip.isInChannel(cmsg.chatChannel)) {
+			GlobalIntercomPlayer giPlayer = playerMap.get(player.getUID() + "");
+			if (giPlayer != null && giPlayer.isInChannel(cmsg.chatChannel)) {
 				String color = colorOther;
 				if ((player.getUID() + "").contentEquals(cmsg.playerUID)) {
 					color = colorSelf;
@@ -564,7 +593,7 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 	@Override
 	public void handleMessage(String message) {
 		// log.out(message, 0);
-		WSMessage wsm = new Gson().fromJson(message, WSMessage.class);
+		WSMessage<?> wsm = new Gson().fromJson(message, WSMessage.class);
 		if (wsm.event.contentEquals("broadcastMessage")) {
 			Type type = new TypeToken<WSMessage<ChatMessage>>() {
 			}.getType();
@@ -767,5 +796,11 @@ public class GlobalIntercom extends Plugin implements Listener, MessageHandler, 
 		} else {
 			log.out(file.toString() + " was changed", 0);
 		}
+	}
+
+	@Override
+	public void handleBinaryMessage(byte[] arg0) {
+		// TODO Auto-generated method stub
+
 	}
 }

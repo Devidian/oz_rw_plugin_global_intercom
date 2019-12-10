@@ -1,5 +1,12 @@
 ## [Unreleased]
 
+## [0.11.0] - 2019-12-10
+### Changed
+- moved WSClientEndpoint to tools 0.7.0
+- moved dependency jars for websockets to tools 0.7.0
+### Fixed
+- nullPointerException in SP when GI Player is not loaded.
+
 ## [0.10.2] - 2019-05-02
 ### Added
 - Minimal installation information added to README.md
